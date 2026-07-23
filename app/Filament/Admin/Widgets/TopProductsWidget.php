@@ -2,7 +2,6 @@
 
 namespace App\Filament\Admin\Widgets;
 
-use App\Models\OrderItem;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
@@ -16,11 +15,12 @@ class TopProductsWidget extends BaseWidget
 
     public function table(Table $table): Table
     {
-        // Wrap aggregation as a subquery so Filament cannot append
-        // extra ORDER BY / pagination columns that violate ONLY_FULL_GROUP_BY.
-        $sub = OrderItem::query()
+        // Use DB::query()->fromSub() to completely avoid Eloquent model scopes
+        // (including soft-delete deleted_at) being appended to the outer query.
+        $sub = DB::table('order_items')
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
             ->where('orders.status', 'paid')
+            ->whereNull('order_items.deleted_at')
             ->select(
                 'order_items.product_name',
                 'order_items.variant_name',
@@ -34,8 +34,9 @@ class TopProductsWidget extends BaseWidget
 
         return $table
             ->query(
-                OrderItem::fromSub($sub, 'top_products')
-                    ->select('*')
+                // fromSub on DB::query() returns a plain query builder — no model,
+                // no global scopes, Filament can add its own pagination safely.
+                DB::query()->fromSub($sub, 'top_products')->select('*')
             )
             ->columns([
                 Tables\Columns\TextColumn::make('product_name')

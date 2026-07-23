@@ -10,7 +10,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Actions\Action;
+use Filament\Actions\Action;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Schemas\Schema;
@@ -140,7 +140,7 @@ class ShiftManagement extends Page implements HasSchemas
                                     ->dehydrated(false),
                             ])
                             ->columns(3)
-                            ->defaultItems([
+                            ->default([
                                 ['denomination' => 100000, 'quantity' => 0],
                                 ['denomination' => 50000, 'quantity' => 0],
                                 ['denomination' => 20000, 'quantity' => 0],
@@ -152,7 +152,7 @@ class ShiftManagement extends Page implements HasSchemas
                                 ['denomination' => 200, 'quantity' => 0],
                                 ['denomination' => 100, 'quantity' => 0],
                             ])
-                            ->reactive()
+                            ->live()
                             ->afterStateUpdated(function ($state, \Filament\Forms\Set $set, $get) {
                                 // Calculate total opening cash
                                 $total = 0;
@@ -265,7 +265,7 @@ class ShiftManagement extends Page implements HasSchemas
                                     ->dehydrated(false),
                             ])
                             ->columns(3)
-                            ->defaultItems([
+                            ->default([
                                 ['denomination' => 100000, 'quantity' => 0],
                                 ['denomination' => 50000, 'quantity' => 0],
                                 ['denomination' => 20000, 'quantity' => 0],
@@ -277,7 +277,7 @@ class ShiftManagement extends Page implements HasSchemas
                                 ['denomination' => 200, 'quantity' => 0],
                                 ['denomination' => 100, 'quantity' => 0],
                             ])
-                            ->reactive(),
+                            ->live(),
 
                         Textarea::make('variance_notes')
                             ->label('Catatan Selisih (jika ada)')
@@ -328,7 +328,6 @@ class ShiftManagement extends Page implements HasSchemas
                             ->label('Selisih')
                             ->disabled()
                             ->prefix('Rp')
-                            ->color(fn () => $this->currentShift?->summary && $this->currentShift->summary->variance > 0 ? 'success' : ($this->currentShift?->summary && $this->currentShift->summary->variance < 0 ? 'danger' : 'gray'))
                             ->default(fn () => $this->currentShift?->summary && $this->currentShift->summary->variance !== null ? number_format($this->currentShift->summary->variance, 0, ',', '.') : '-'),
 
                         Textarea::make('summary_variance_notes')
