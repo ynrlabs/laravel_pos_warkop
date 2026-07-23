@@ -10,7 +10,8 @@ use Filament\Resources\Resource;
 use BackedEnum;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Forms\Components\Section;
+use Filament\Actions;
+use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\ColorPicker;
@@ -122,35 +123,25 @@ class CategoryResource extends Resource
                 
                 ColorColumn::make('color')
                     ->label('Warna')
-                    ->formatStateUsing(fn ($state) => $state ?? '#8B4513'),
+                    ->default('#8B4513'),
                 
                 TextColumn::make('icon')
                     ->label('Ikon')
                     ->formatStateUsing(fn ($state) => $state ? "{$state}" : '-')
                     ->toggleable(isToggledHiddenByDefault: true),
                 
-                BadgeColumn::make('is_kds_station')
+                IconColumn::make('is_kds_station')
                     ->label('KDS Station')
-                    ->colors([
-                        'success' => true,
-                        'gray' => false,
-                    ])
-                    ->trueIcon('heroicon-o-check-circle')
-                    ->falseIcon('heroicon-o-x-circle')
+                    ->boolean()
                     ->toggleable(),
                 
                 TextColumn::make('kds_station_name')
                     ->label('Nama Station')
                     ->toggleable(isToggledHiddenByDefault: true),
                 
-                BadgeColumn::make('is_active')
+                IconColumn::make('is_active')
                     ->label('Status')
-                    ->colors([
-                        'success' => true,
-                        'danger' => false,
-                    ])
-                    ->trueIcon('heroicon-o-check-circle')
-                    ->falseIcon('heroicon-o-x-circle'),
+                    ->boolean(),
                 
                 TextColumn::make('sort_order')
                     ->label('Urutan')
@@ -188,12 +179,12 @@ class CategoryResource extends Resource
                     ->native(false),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Actions\EditAction::make(),
+                Actions\DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                Actions\BulkActionGroup::make([
+                    Actions\DeleteBulkAction::make(),
                 ]),
             ])
             ->defaultSort('sort_order')

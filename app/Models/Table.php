@@ -57,4 +57,9 @@ class Table extends Model
     {
         return $query->where('status', 'occupied');
     }
+
+    public function scopeOrdered($query)
+    {
+        return $query->orderBy('sort_order')->orderBy('number');
+    }
 }

@@ -18,8 +18,8 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\Filter;
-use Filament\Tables\Actions\ViewAction;
-use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Actions\ViewAction;
+use Filament\Actions\DeleteBulkAction;
 
 class ShiftSummaryResource extends Resource
 {

@@ -10,14 +10,15 @@ use Filament\Resources\Resource;
 use BackedEnum;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Forms\Components\Section;
+use Filament\Actions;
+use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\Grid;
+use Filament\Schemas\Components\Grid;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\ToggleColumn;
@@ -262,21 +263,21 @@ class PurchaseOrderResource extends Resource
                     ]),
             ])
             ->actions([
-                Tables\Actions\ActionGroup::make([
-                    Tables\Actions\ViewAction::make(),
-                    Tables\Actions\EditAction::make(),
-                    Tables\Actions\Action::make('receive')
+                Actions\ActionGroup::make([
+                    Actions\ViewAction::make(),
+                    Actions\EditAction::make(),
+                    Actions\Action::make('receive')
                         ->label('Terima Barang')
                         ->icon('heroicon-o-truck')
                         ->color('success')
                         ->visible(fn (PurchaseOrder $record) => in_array($record->status, ['sent', 'confirmed', 'partial_received']))
                         ->url(fn (PurchaseOrder $record) => route('filament.admin.resources.po-receipts.create', ['po' => $record])),
-                    Tables\Actions\DeleteAction::make(),
+                    Actions\DeleteAction::make(),
                 ]),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                Actions\BulkActionGroup::make([
+                    Actions\DeleteBulkAction::make(),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');

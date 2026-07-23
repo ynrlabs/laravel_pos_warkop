@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::create('order_item_modifiers', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('order_item_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('modifier_id')->nullable()->constrained()->nullOnDelete();
+            $table->string('modifier_name');
+            $table->decimal('price_adjustment', 15, 2)->default(0);
             $table->timestamps();
         });
     }

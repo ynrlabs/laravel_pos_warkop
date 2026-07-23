@@ -10,13 +10,14 @@ use Filament\Resources\Resource;
 use BackedEnum;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Forms\Components\Section;
+use Filament\Actions;
+use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\Grid;
+use Filament\Schemas\Components\Grid;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\ToggleColumn;
@@ -317,33 +318,33 @@ class StockOpnameResource extends Resource
                     ]),
             ])
             ->actions([
-                Tables\Actions\ActionGroup::make([
-                    Tables\Actions\ViewAction::make(),
-                    Tables\Actions\EditAction::make(),
-                    Tables\Actions\Action::make('start')
+                Actions\ActionGroup::make([
+                    Actions\ViewAction::make(),
+                    Actions\EditAction::make(),
+                    Actions\Action::make('start')
                         ->label('Mulai Opname')
                         ->icon('heroicon-o-play-circle')
                         ->color('primary')
                         ->visible(fn (StockOpname $record) => $record->status === 'draft')
                         ->action(fn (StockOpname $record) => $record->update(['status' => 'in_progress'])),
-                    Tables\Actions\Action::make('complete')
+                    Actions\Action::make('complete')
                         ->label('Selesai')
                         ->icon('heroicon-o-check-circle')
                         ->color('success')
                         ->visible(fn (StockOpname $record) => $record->status === 'in_progress')
                         ->action(fn (StockOpname $record) => $record->update(['status' => 'completed', 'completed_at' => now()])),
-                    Tables\Actions\Action::make('approve')
+                    Actions\Action::make('approve')
                         ->label('Setujui')
                         ->icon('heroicon-o-check-badge')
                         ->color('success')
                         ->visible(fn (StockOpname $record) => $record->status === 'completed')
                         ->action(fn (StockOpname $record) => $record->update(['status' => 'approved', 'approved_by' => auth()->id(), 'approved_at' => now()])),
-                    Tables\Actions\DeleteAction::make(),
+                    Actions\DeleteAction::make(),
                 ]),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                Actions\BulkActionGroup::make([
+                    Actions\DeleteBulkAction::make(),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');

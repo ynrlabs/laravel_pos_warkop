@@ -4,7 +4,7 @@ namespace App\Filament\Pos\Pages;
 
 use App\Models\Shift;
 use App\Models\ShiftDefinition;
-use Filament\Forms\Components\Section;
+use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;

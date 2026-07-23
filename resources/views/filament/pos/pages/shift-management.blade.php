@@ -1,5 +1,76 @@
 {{-- resources/views/filament/pos/pages/shift-management.blade.php --}}
-
+<style>
+    /* Dark Mode styling for Warkop POS */
+    .dark .bg-white {
+        background-color: #1a1615 !important; /* dark chocolate base */
+        color: #f7f3f0 !important;
+    }
+    .dark .bg-gray-50 {
+        background-color: #120e0d !important; /* deeper brown/black */
+        color: #e8e2de !important;
+    }
+    .dark .bg-gray-100 {
+        background-color: #2b2422 !important; /* medium chocolate */
+        color: #f7f3f0 !important;
+    }
+    .dark .bg-gray-200 {
+        background-color: #3b302c !important;
+    }
+    .dark .text-gray-900 {
+        color: #f7f3f0 !important;
+    }
+    .dark .text-gray-700 {
+        color: #dcd3cb !important;
+    }
+    .dark .text-gray-600 {
+        color: #c4b9b0 !important;
+    }
+    .dark .text-gray-500 {
+        color: #ab9f96 !important;
+    }
+    .dark .border-gray-200, 
+    .dark .border-gray-300,
+    .dark .border-gray-100 {
+        border-color: #2b2422 !important;
+    }
+    .dark input, 
+    .dark select, 
+    .dark textarea {
+        background-color: #221c1a !important;
+        color: #f7f3f0 !important;
+        border-color: #3d322f !important;
+    }
+    .dark input:focus, 
+    .dark select:focus, 
+    .dark textarea:focus {
+        border-color: #d4a574 !important;
+        --tw-ring-color: #d4a574 !important;
+    }
+    .dark .hover\:bg-gray-100:hover {
+        background-color: #2b2422 !important;
+    }
+    .dark .hover\:bg-gray-200:hover {
+        background-color: #3b302c !important;
+    }
+    .dark .bg-coffee-100 {
+        background-color: #3d2f2b !important;
+        color: #d4a574 !important;
+    }
+    .dark .text-coffee-600 {
+        color: #d4a574 !important;
+    }
+    .dark .text-coffee-800 {
+        color: #f5ede6 !important;
+    }
+    .dark .hover\:border-coffee-300:hover {
+        border-color: #d4a574 !important;
+    }
+    .dark table, .dark tr, .dark th, .dark td {
+        background-color: #1a1615 !important;
+        color: #f7f3f0 !important;
+        border-color: #2b2422 !important;
+    }
+</style>
 <div class="space-y-6">
     {{-- Hero Section --}}
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">

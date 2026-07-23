@@ -46,7 +46,7 @@ class EditShift extends EditRecord
                 ->color('primary')
                 ->visible(fn ($record) => $record->status === 'closed')
                 ->form([
-                    \Filament\Forms\Components\Section::make('Input Kas Fisik di Laci')
+                    \Filament\Schemas\Components\Section::make('Input Kas Fisik di Laci')
                         ->schema([
                             \Filament\Forms\Components\Repeater::make('closing_cash')
                                 ->label('Denominasi Uang')

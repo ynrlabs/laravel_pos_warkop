@@ -1085,13 +1085,19 @@ class QuickOrder extends Page
         $this->dispatch('notify', message: 'Tab berhasil dipindah ke meja baru!', type: 'success');
     }
     
-    public function render(): \Illuminate\Contracts\View\View
+    protected function getViewData(): array
     {
-        return view($this->view, [
+        return [
             'categories' => $this->categories,
             'products' => $this->products,
             'tables' => $this->tables,
             'activeTabs' => $this->activeTabs,
-        ]);
+            'subtotal' => $this->subtotal,
+            'tax_amount' => $this->tax_amount,
+            'service_charge' => $this->service_charge,
+            'total' => $this->total,
+            'rounded_total' => $this->rounded_total,
+            'change' => $this->change,
+        ];
     }
 }

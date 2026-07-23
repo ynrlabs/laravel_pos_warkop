@@ -10,7 +10,8 @@ use Filament\Resources\Resource;
 use BackedEnum;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Forms\Components\Section;
+use Filament\Actions;
+use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Select;
@@ -18,7 +19,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\Grid;
+use Filament\Schemas\Components\Grid;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\BadgeColumn;
@@ -239,21 +240,13 @@ class ProductResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 
-                BadgeColumn::make('is_active')
+                IconColumn::make('is_active')
                     ->label('Status')
-                    ->colors([
-                        'success' => true,
-                        'danger' => false,
-                    ])
-                    ->trueIcon('heroicon-o-check-circle')
-                    ->falseIcon('heroicon-o-x-circle'),
+                    ->boolean(),
                 
-                BadgeColumn::make('is_bestseller')
+                IconColumn::make('is_bestseller')
                     ->label('Best Seller')
-                    ->colors([
-                        'warning' => true,
-                        'gray' => false,
-                    ])
+                    ->boolean()
                     ->trueIcon('heroicon-o-star')
                     ->falseIcon('heroicon-o-x-circle')
                     ->toggleable(),
@@ -312,26 +305,26 @@ class ProductResource extends Resource
                     ->native(false),
             ])
             ->actions([
-                Tables\Actions\ActionGroup::make([
-                    Tables\Actions\EditAction::make(),
-                    Tables\Actions\Action::make('manage_variants')
-                        ->label('Kelola Varian')
-                        ->icon('heroicon-o-cube-transparent')
-                        ->url(fn (Product $record) => route('filament.admin.resources.product-variants.index', ['product' => $record])),
-                    Tables\Actions\Action::make('manage_modifiers')
-                        ->label('Kelola Modifier')
-                        ->icon('heroicon-o-adjustments-horizontal')
-                        ->url(fn (Product $record) => route('filament.admin.resources.product-modifiers.index', ['product' => $record])),
-                    Tables\Actions\Action::make('manage_toppings')
-                        ->label('Kelola Topping')
-                        ->icon('heroicon-o-plus-circle')
-                        ->url(fn (Product $record) => route('filament.admin.resources.product-toppings.index', ['product' => $record])),
-                    Tables\Actions\DeleteAction::make(),
+                Actions\ActionGroup::make([
+                    Actions\EditAction::make(),
+                    // Actions\Action::make('manage_variants')
+                    //     ->label('Kelola Varian')
+                    //     // ->icon('heroicon-o-cube-transparent')
+                    //     // ->url(fn (Product $record) => route('filament.admin.resources.product-variants.index', ['product' => $record])),
+                    // Actions\Action::make('manage_modifiers')
+                    //     ->label('Kelola Modifier')
+                    //     // ->icon('heroicon-o-adjustments-horizontal')
+                    //     // ->url(fn (Product $record) => route('filament.admin.resources.product-modifiers.index', ['product' => $record])),
+                    // Actions\Action::make('manage_toppings')
+                    //     ->label('Kelola Topping')
+                    //     // ->icon('heroicon-o-plus-circle')
+                    //     // ->url(fn (Product $record) => route('filament.admin.resources.product-toppings.index', ['product' => $record])),
+                    Actions\DeleteAction::make(),
                 ]),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                Actions\BulkActionGroup::make([
+                    Actions\DeleteBulkAction::make(),
                 ]),
             ])
             ->defaultSort('sort_order')

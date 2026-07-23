@@ -1,3 +1,97 @@
+<style>
+    /* Dark Mode styling for Warkop POS */
+    .dark .bg-white {
+        background-color: #1a1615 !important; /* dark chocolate base */
+        color: #f7f3f0 !important;
+    }
+    .dark .bg-gray-50 {
+        background-color: #120e0d !important; /* deeper brown/black */
+        color: #e8e2de !important;
+    }
+    .dark .bg-gray-100 {
+        background-color: #2b2422 !important; /* medium chocolate */
+        color: #f7f3f0 !important;
+    }
+    .dark .bg-gray-200 {
+        background-color: #3b302c !important;
+    }
+    .dark .text-gray-900 {
+        color: #f7f3f0 !important;
+    }
+    .dark .text-gray-700 {
+        color: #dcd3cb !important;
+    }
+    .dark .text-gray-600 {
+        color: #c4b9b0 !important;
+    }
+    .dark .text-gray-500 {
+        color: #ab9f96 !important;
+    }
+    .dark .border-gray-200, 
+    .dark .border-gray-300,
+    .dark .border-gray-100 {
+        border-color: #2b2422 !important;
+    }
+    .dark input, 
+    .dark select, 
+    .dark textarea {
+        background-color: #221c1a !important;
+        color: #f7f3f0 !important;
+        border-color: #3d322f !important;
+    }
+    .dark input:focus, 
+    .dark select:focus, 
+    .dark textarea:focus {
+        border-color: #d4a574 !important;
+        --tw-ring-color: #d4a574 !important;
+    }
+    .dark .hover\:bg-gray-100:hover {
+        background-color: #2b2422 !important;
+    }
+    .dark .hover\:bg-gray-200:hover {
+        background-color: #3b302c !important;
+    }
+    .dark .bg-coffee-100 {
+        background-color: #3d2f2b !important;
+        color: #d4a574 !important;
+    }
+    .dark .text-coffee-600 {
+        color: #d4a574 !important;
+    }
+    .dark .text-coffee-800 {
+        color: #f5ede6 !important;
+    }
+    .dark .hover\:border-coffee-300:hover {
+        border-color: #d4a574 !important;
+    }
+    
+    /* Product list items */
+    .dark button.group.bg-white {
+        background-color: #1f1a18 !important;
+        border-color: #2b2422 !important;
+    }
+    .dark button.group.bg-white:hover {
+        border-color: #d4a574 !important;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4) !important;
+    }
+    .dark .bg-gray-100 {
+        background-color: #26201e !important;
+    }
+    
+    /* Cart items */
+    .dark .bg-gray-50.rounded-lg.p-3 {
+        background-color: #1f1a18 !important;
+        border: 1px solid #2b2422 !important;
+    }
+    .dark .bg-coffee-50 {
+        background-color: #2d2320 !important;
+    }
+    
+    /* Modals dark theme */
+    .dark .fixed.inset-0.bg-gray-500\/75 {
+        background-color: rgba(0, 0, 0, 0.8) !important;
+    }
+</style>
 <div class="h-full flex flex-col">
     <!-- Header -->
     <div class="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-10">
@@ -36,8 +130,25 @@
                     <i class="heroicon-m-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                 </div>
                 
-                <!-- Cart Summary -->
+                <!-- Cart Summary & Theme Toggle -->
                 <div class="flex items-center gap-4">
+                    <!-- Theme Toggle Button -->
+                    <button 
+                        onclick="toggleThemeMode()" 
+                        type="button"
+                        class="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 flex items-center justify-center"
+                        title="Ubah Mode Gelap/Terang"
+                    >
+                        <!-- Sun icon (visible in dark mode) -->
+                        <svg id="theme-icon-sun" class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M16.243 17.657l.707-.707M7.757 6.364l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"></path>
+                        </svg>
+                        <!-- Moon icon (visible in light mode) -->
+                        <svg id="theme-icon-moon" class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                        </svg>
+                    </button>
+                    
                     <span class="text-sm text-gray-600">
                         {{ count($cart) }} item
                     </span>
@@ -955,5 +1066,37 @@
             @this.$wire.call('removeSplitPayment', index);
         });
     });
+
+    function toggleThemeMode() {
+        const isDark = document.documentElement.classList.contains('dark');
+        if (isDark) {
+            localStorage.setItem('theme', 'light');
+            document.documentElement.classList.remove('dark');
+        } else {
+            localStorage.setItem('theme', 'dark');
+            document.documentElement.classList.add('dark');
+        }
+        window.dispatchEvent(new Event('theme-changed'));
+        updateToggleIcons();
+    }
+
+    function updateToggleIcons() {
+        const isDark = document.documentElement.classList.contains('dark');
+        const sun = document.getElementById('theme-icon-sun');
+        const moon = document.getElementById('theme-icon-moon');
+        if (sun && moon) {
+            if (isDark) {
+                sun.classList.remove('hidden');
+                moon.classList.add('hidden');
+            } else {
+                sun.classList.add('hidden');
+                moon.classList.remove('hidden');
+            }
+        }
+    }
+
+    // Initialize icons
+    setTimeout(updateToggleIcons, 100);
+    document.addEventListener('livewire:navigated', updateToggleIcons);
 </script>
 @endpush
