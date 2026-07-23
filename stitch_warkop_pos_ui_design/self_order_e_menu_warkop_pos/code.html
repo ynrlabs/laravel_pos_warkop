@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+
+<html class="light" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Warkop POS - Self Ordering</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-fixed": "#fddf9e",
+                    "tertiary-fixed": "#e6e2dd",
+                    "on-primary": "#ffffff",
+                    "tertiary-container": "#73706c",
+                    "surface-container-highest": "#f7dfc5",
+                    "surface-variant": "#f7dfc5",
+                    "on-secondary-container": "#76602b",
+                    "primary-fixed-dim": "#e8c08b",
+                    "inverse-primary": "#e8c08b",
+                    "secondary-container": "#fadc9b",
+                    "on-tertiary-fixed": "#1d1b19",
+                    "on-surface": "#25190a",
+                    "primary-fixed": "#ffddb2",
+                    "on-primary-fixed-variant": "#5d4218",
+                    "surface-bright": "#fff8f4",
+                    "primary-container": "#8b6b3d",
+                    "background": "#fff8f4",
+                    "on-surface-variant": "#4e453b",
+                    "on-error": "#ffffff",
+                    "surface": "#fff8f4",
+                    "on-secondary": "#ffffff",
+                    "on-background": "#25190a",
+                    "on-secondary-fixed": "#251a00",
+                    "on-tertiary-container": "#faf5f0",
+                    "surface-dim": "#eed6bd",
+                    "inverse-on-surface": "#ffeede",
+                    "inverse-surface": "#3c2e1d",
+                    "tertiary": "#5a5854",
+                    "on-tertiary-fixed-variant": "#484643",
+                    "on-primary-fixed": "#291800",
+                    "on-primary-container": "#fff4ea",
+                    "error": "#ba1a1a",
+                    "on-secondary-fixed-variant": "#584411",
+                    "error-container": "#ffdad6",
+                    "on-error-container": "#93000a",
+                    "tertiary-fixed-dim": "#cac6c1",
+                    "surface-container-low": "#fff1e5",
+                    "outline-variant": "#d2c4b6",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-fixed-dim": "#e0c384",
+                    "surface-tint": "#77592d",
+                    "secondary": "#715c27",
+                    "outline": "#807569",
+                    "surface-container-high": "#fde4cb",
+                    "on-tertiary": "#ffffff",
+                    "surface-container": "#ffebd6",
+                    "primary": "#705327"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-mobile": "16px",
+                    "margin-desktop": "32px",
+                    "touch-min": "48px",
+                    "touch-ideal": "56px",
+                    "gutter": "16px",
+                    "stack-sm": "8px",
+                    "stack-md": "16px",
+                    "stack-lg": "24px"
+            },
+            "fontFamily": {
+                    "display-lg": ["Plus Jakarta Sans"],
+                    "body-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "num-lg": ["JetBrains Mono"],
+                    "body-sm": ["Inter"],
+                    "label-caps": ["Inter"],
+                    "headline-md": ["Plus Jakarta Sans"],
+                    "num-md": ["JetBrains Mono"],
+                    "headline-sm": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "num-lg": ["20px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "headline-md": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                    "num-md": ["16px", {"lineHeight": "20px", "fontWeight": "500"}],
+                    "headline-sm": ["24px", {"lineHeight": "32px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #fff8f4; /* background color from config */
+            -webkit-tap-highlight-color: transparent;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .category-tab-active {
+            color: #705327; /* primary */
+            border-bottom: 2px solid #705327;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-surface">
+<!-- Top Navigation Bar -->
+<nav class="sticky top-0 z-50 bg-surface flex justify-between items-center w-full px-margin-mobile h-touch-ideal border-b border-outline-variant shadow-sm">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-primary font-bold">Warkop POS</span>
+</div>
+<div class="bg-secondary-container px-3 py-1 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px] text-on-secondary-container">table_restaurant</span>
+<span class="font-label-caps text-on-secondary-container">MEJA 05</span>
+</div>
+</nav>
+<main class="pb-32">
+<!-- Hero Section: Customer Name -->
+<section class="px-margin-mobile pt-8 pb-6 bg-gradient-to-b from-surface-container-low to-surface">
+<div class="space-y-stack-sm">
+<h1 class="font-headline-sm text-on-surface">Selamat Datang!</h1>
+<p class="font-body-md text-on-surface-variant">Silakan masukkan nama Anda untuk memulai pesanan.</p>
+</div>
+<div class="mt-stack-md">
+<div class="relative">
+<input class="w-full h-touch-ideal px-4 rounded-xl border-1 border-outline focus:ring-2 focus:ring-primary focus:border-primary bg-surface transition-all font-body-lg" id="customer_name" placeholder="Nama Pelanggan" type="text"/>
+<span class="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-primary">person</span>
+</div>
+</div>
+</section>
+<!-- Category Horizontal Scroll -->
+<div class="sticky top-[56px] z-40 bg-surface/90 backdrop-blur-md border-b border-outline-variant px-margin-mobile">
+<div class="flex gap-6 overflow-x-auto hide-scrollbar py-3">
+<button class="whitespace-nowrap font-label-caps category-tab-active transition-all pb-1">SEMUA</button>
+<button class="whitespace-nowrap font-label-caps text-on-surface-variant hover:text-primary transition-all pb-1">KOPI</button>
+<button class="whitespace-nowrap font-label-caps text-on-surface-variant hover:text-primary transition-all pb-1">NON-KOPI</button>
+<button class="whitespace-nowrap font-label-caps text-on-surface-variant hover:text-primary transition-all pb-1">MAKANAN</button>
+<button class="whitespace-nowrap font-label-caps text-on-surface-variant hover:text-primary transition-all pb-1">CAMILAN</button>
+</div>
+</div>
+<!-- Menu Grid -->
+<section class="px-margin-mobile mt-gutter">
+<div class="grid grid-cols-2 gap-4">
+<!-- Kopi Item 1 -->
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant group active:scale-95 transition-transform shadow-sm">
+<div class="relative aspect-square">
+<div class="w-full h-full bg-cover bg-center" data-alt="A top-down shot of a creamy Indonesian Iced Coffee Milk (Es Kopi Susu) in a tall glass with swirling textures of espresso and condensed milk. Soft morning light creates a warm, inviting glow on the wooden cafe table background. Warm professionalism aesthetic with soft brown and cream tones." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBk_fq_z6FDfyrQJ_wkzzrYEyjzSSL9GlFge4PsJ11xCjFnSUgI1Lpi85x-zwUNGFay3zJFbZ8cnfTHdY-xAR40iPi1PplpV1_hwkgZflAJakn2HlL1dEwtRb0l_R3_m7VlfK0AoKiMSp3zbpWgw01Qkp0nQ-1r6m2zrcQLRLKgcIvHzryOyRG-EcMmJXYCQNolw_cZCgtIPJ2FfhaiSOBCCSo2BDXbp4mwC3eOqdHJWUES0o97nqJF')"></div>
+<div class="absolute top-2 right-2 bg-background/90 backdrop-blur px-2 py-0.5 rounded-lg border border-outline-variant">
+<span class="font-num-md text-primary">Rp 18k</span>
+</div>
+</div>
+<div class="p-3 space-y-1">
+<h3 class="font-body-md font-bold text-on-surface">Es Kopi Susu Gula Aren</h3>
+<p class="font-body-sm text-on-surface-variant line-clamp-1">Espresso, susu segar, gula aren.</p>
+<button class="w-full mt-2 h-10 bg-primary-container text-on-primary-container rounded-lg font-label-caps flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">add</span> TAMBAH
+                        </button>
+</div>
+</div>
+<!-- Kopi Item 2 -->
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant group active:scale-95 transition-transform shadow-sm">
+<div class="relative aspect-square">
+<div class="w-full h-full bg-cover bg-center" data-alt="A minimalist close-up of a classic hot Cafe Latte with intricate heart-shaped latte art. The coffee is served in a matte white ceramic cup, resting on a textured linen coaster. The lighting is soft and professional, highlighting the silky texture of the milk foam against a warm cream-colored background." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC5j253yjVSKaxVOOhQbczGgYF-io8CPKerqMWgBZwz-JUSHAjIRWElYD2FzquXaDdYPMucgdrx4MSxQ2fjBZaBo5yg3q5FDPbGj9EvwV3Dfx9GX-1o00yvPMW6aZ5w93xsJ4uPFk8gqlNWEgq0oMRlPrm2j8813MqGgmjHhw0fWWQ-s_1HUF69KwClbBM6wVteO0erLdvuVpTFw7ecd2acF-5Yif9VdTuIuQy1CMUmPbB2J9DOxPdF')"></div>
+<div class="absolute top-2 right-2 bg-background/90 backdrop-blur px-2 py-0.5 rounded-lg border border-outline-variant">
+<span class="font-num-md text-primary">Rp 22k</span>
+</div>
+</div>
+<div class="p-3 space-y-1">
+<h3 class="font-body-md font-bold text-on-surface">Cafe Latte Hot</h3>
+<p class="font-body-sm text-on-surface-variant line-clamp-1">Espresso dengan susu uap lembut.</p>
+<button class="w-full mt-2 h-10 bg-primary-container text-on-primary-container rounded-lg font-label-caps flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">add</span> TAMBAH
+                        </button>
+</div>
+</div>
+<!-- Non-Kopi Item -->
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant group active:scale-95 transition-transform shadow-sm">
+<div class="relative aspect-square">
+<div class="w-full h-full bg-cover bg-center" data-alt="A vibrant and refreshing Matcha Latte in a glass with visible layers of green tea and white milk. The drink is garnished with a light dusting of matcha powder on top. Set in a bright, airy cafe environment with warm wood accents and natural lighting that emphasizes the rich green color." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBaByG1zXtWjv_Tg5LJEGFtxM_zbcV7YX7NnWraNCOSxtHJVOhg6baRd2C8DsI1df1wFILWS0mQjvUaQNWmBsyvbyrJV2fq_kGe0TJdnulmFckObgQrE1l889tm8YeUdep87tpv2dj0_S_HBjCvcZ1N1X9ccE48ZFrSjOJY9lcvqI384sFNFUiX0INDja7beDWzI57pu095ILnrWz1H0C3m32H-iTtGIp89Fey7S493e2a9L5m2hWeg')"></div>
+<div class="absolute top-2 right-2 bg-background/90 backdrop-blur px-2 py-0.5 rounded-lg border border-outline-variant">
+<span class="font-num-md text-primary">Rp 25k</span>
+</div>
+</div>
+<div class="p-3 space-y-1">
+<h3 class="font-body-md font-bold text-on-surface">Matcha Latte</h3>
+<p class="font-body-sm text-on-surface-variant line-clamp-1">Pure matcha jepang dan susu segar.</p>
+<button class="w-full mt-2 h-10 bg-primary-container text-on-primary-container rounded-lg font-label-caps flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">add</span> TAMBAH
+                        </button>
+</div>
+</div>
+<!-- Makanan Item -->
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant group active:scale-95 transition-transform shadow-sm">
+<div class="relative aspect-square">
+<div class="w-full h-full bg-cover bg-center" data-alt="A delicious serving of Nasi Goreng Kampung (Indonesian fried rice) topped with a sunny-side-up egg and crispy shallots. Presented on a traditional ceramic plate with fresh cucumber and tomato slices on the side. The lighting is warm and domestic, suggesting a cozy, comforting meal in a modern warkop setting." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAL3968RvWDh11_6ls0z__Ejqzp_2AKtBv9ADmx8CO0Yef4gQ-rL2MxjHdme0ZJXQ5sZlZL3dHLp2T4LSTu4ciSELCoB35tLeRTiEzGKk7AgBueXPNUH5O4oPXUOnv4hfOKCjvxDM0dLXjueXpV2tMKGcI3BSZUCkILEqCSxGkVdrR20SQpLg7bO3043yPTXC9ZTOyDV_Pb3vzQP2_sEz1raJuuAvCuMp5RFk6kzfPYqrSKw1ak9vSL')"></div>
+<div class="absolute top-2 right-2 bg-background/90 backdrop-blur px-2 py-0.5 rounded-lg border border-outline-variant">
+<span class="font-num-md text-primary">Rp 28k</span>
+</div>
+</div>
+<div class="p-3 space-y-1">
+<h3 class="font-body-md font-bold text-on-surface">Nasi Goreng Warkop</h3>
+<p class="font-body-sm text-on-surface-variant line-clamp-1">Nasi goreng bumbu rempah asli.</p>
+<button class="w-full mt-2 h-10 bg-primary-container text-on-primary-container rounded-lg font-label-caps flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">add</span> TAMBAH
+                        </button>
+</div>
+</div>
+<!-- Snacks Item -->
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant group active:scale-95 transition-transform shadow-sm">
+<div class="relative aspect-square">
+<div class="w-full h-full bg-cover bg-center" data-alt="A plate of golden-brown Pisang Goreng (fried bananas) drizzled with dark chocolate sauce and sprinkled with grated cheese. The bananas are crispy and inviting, served on a wooden board. The aesthetic is warm and rustic, emphasizing the artisanal quality of the snack under soft, warm lighting." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA8JuohhKPL1fkRS_jEr-zyp185X8_DKnu1hcU3kZhQUz7i2FyNrOgsgeE_jakx6DDhWf39t1dQSLmp2_U4bgjkNn3qdQhuSDnz2eVCAgXGNVk2HduMO05Slp7eqnm6I52I0Ko9deVKBwFgulgK8eDtLB2jziUH0ysDsRTPCAur4nYfZmCxjcR-XNPzCjYJMvcj-Ob60-BHZ_6TkrI5HKBIZvW5Z5qtl7iRkG-8WUenZz84_nslvsMW')"></div>
+<div class="absolute top-2 right-2 bg-background/90 backdrop-blur px-2 py-0.5 rounded-lg border border-outline-variant">
+<span class="font-num-md text-primary">Rp 15k</span>
+</div>
+</div>
+<div class="p-3 space-y-1">
+<h3 class="font-body-md font-bold text-on-surface">Pisang Goreng Coklat</h3>
+<p class="font-body-sm text-on-surface-variant line-clamp-1">Pisang manis dengan saus coklat.</p>
+<button class="w-full mt-2 h-10 bg-primary-container text-on-primary-container rounded-lg font-label-caps flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">add</span> TAMBAH
+                        </button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Sticky Bar -->
+<div class="fixed bottom-0 left-0 right-0 p-4 bg-surface/80 backdrop-blur-lg border-t border-outline-variant z-50">
+<button class="w-full h-14 bg-primary text-on-primary rounded-xl flex items-center justify-between px-6 shadow-lg active:scale-95 transition-all" id="cart_button">
+<div class="flex items-center gap-3">
+<div class="relative">
+<span class="material-symbols-outlined text-[24px]">shopping_cart</span>
+<span class="absolute -top-2 -right-2 bg-error text-on-error text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-primary">2</span>
+</div>
+<span class="font-label-caps text-lg">LIHAT KERANJANG</span>
+</div>
+<div class="flex flex-col items-end">
+<span class="font-num-lg">Rp 40.000</span>
+<span class="text-[10px] font-label-caps opacity-80">2 ITEMS</span>
+</div>
+</button>
+</div>
+<!-- Micro-interactions Script -->
+<script>
+        // Simple ripple effect or interaction for buttons
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('click', function(e) {
+                // Future expansion: Add haptic feedback or specific cart logic here
+            });
+        });
+
+        // Search bar interaction
+        const nameInput = document.getElementById('customer_name');
+        nameInput.addEventListener('focus', () => {
+            nameInput.parentElement.classList.add('ring-2', 'ring-primary/20');
+        });
+        nameInput.addEventListener('blur', () => {
+            nameInput.parentElement.classList.remove('ring-2', 'ring-primary/20');
+        });
+
+        // Category Tab switching visual
+        const tabs = document.querySelectorAll('.font-label-caps');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                tabs.forEach(t => {
+                    t.classList.remove('category-tab-active');
+                    t.classList.add('text-on-surface-variant');
+                });
+                this.classList.add('category-tab-active');
+                this.classList.remove('text-on-surface-variant');
+            });
+        });
+    </script>
+</body></html>

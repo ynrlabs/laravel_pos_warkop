@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Warkop POS - Customer Queue Display</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;family=Inter:wght@400;500;700&amp;family=JetBrains+Mono:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-fixed": "#fddf9e",
+                    "tertiary-fixed": "#e6e2dd",
+                    "on-primary": "#ffffff",
+                    "tertiary-container": "#73706c",
+                    "surface-container-highest": "#f7dfc5",
+                    "surface-variant": "#f7dfc5",
+                    "on-secondary-container": "#76602b",
+                    "primary-fixed-dim": "#e8c08b",
+                    "inverse-primary": "#e8c08b",
+                    "secondary-container": "#fadc9b",
+                    "on-tertiary-fixed": "#1d1b19",
+                    "on-surface": "#25190a",
+                    "primary-fixed": "#ffddb2",
+                    "on-primary-fixed-variant": "#5d4218",
+                    "surface-bright": "#fff8f4",
+                    "primary-container": "#8b6b3d",
+                    "background": "#fff8f4",
+                    "on-surface-variant": "#4e453b",
+                    "on-error": "#ffffff",
+                    "surface": "#fff8f4",
+                    "on-secondary": "#ffffff",
+                    "on-background": "#25190a",
+                    "on-secondary-fixed": "#251a00",
+                    "on-tertiary-container": "#faf5f0",
+                    "surface-dim": "#eed6bd",
+                    "inverse-on-surface": "#ffeede",
+                    "inverse-surface": "#3c2e1d",
+                    "tertiary": "#5a5854",
+                    "on-tertiary-fixed-variant": "#484643",
+                    "on-primary-fixed": "#291800",
+                    "on-primary-container": "#fff4ea",
+                    "error": "#ba1a1a",
+                    "on-secondary-fixed-variant": "#584411",
+                    "error-container": "#ffdad6",
+                    "on-error-container": "#93000a",
+                    "tertiary-fixed-dim": "#cac6c1",
+                    "surface-container-low": "#fff1e5",
+                    "outline-variant": "#d2c4b6",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-fixed-dim": "#e0c384",
+                    "surface-tint": "#77592d",
+                    "secondary": "#715c27",
+                    "outline": "#807569",
+                    "surface-container-high": "#fde4cb",
+                    "on-tertiary": "#ffffff",
+                    "surface-container": "#ffebd6",
+                    "primary": "#705327"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-mobile": "16px",
+                    "margin-desktop": "32px",
+                    "touch-min": "48px",
+                    "touch-ideal": "56px",
+                    "gutter": "16px",
+                    "stack-sm": "8px",
+                    "stack-md": "16px",
+                    "stack-lg": "24px"
+            },
+            "fontFamily": {
+                    "display-lg": ["Plus Jakarta Sans"],
+                    "body-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "num-lg": ["JetBrains Mono"],
+                    "body-sm": ["Inter"],
+                    "label-caps": ["Inter"],
+                    "headline-md": ["Plus Jakarta Sans"],
+                    "num-md": ["JetBrains Mono"],
+                    "headline-sm": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "num-lg": ["20px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "headline-md": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                    "num-md": ["16px", {"lineHeight": "20px", "fontWeight": "500"}],
+                    "headline-sm": ["24px", {"lineHeight": "32px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        @keyframes pulse-custom {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.9; }
+        }
+        .animate-pulse-slow {
+            animation: pulse-custom 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        .marquee {
+            white-space: nowrap;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+        .marquee span {
+            display: inline-block;
+            padding-left: 100%;
+            animation: marquee 25s linear infinite;
+        }
+        @keyframes marquee {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-100%, 0); }
+        }
+        /* Custom hide scrollbars for cleaner display */
+        ::-webkit-scrollbar { display: none; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(229, 224, 218, 1);
+        }
+    </style>
+</head>
+<body class="bg-surface-dim h-screen w-screen overflow-hidden text-on-surface font-body-md select-none">
+<!-- Top Header / App Bar (Derived from JSON style) -->
+<header class="flex justify-between items-center w-full px-margin-desktop h-24 bg-surface border-b border-outline-variant shadow-sm sticky top-0 z-50">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary text-4xl" data-icon="coffee">coffee</span>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">WARKOP POS</h1>
+</div>
+<div class="flex items-center gap-stack-lg">
+<div class="flex flex-col items-end">
+<span class="font-label-caps text-label-caps text-on-surface-variant">JAM SEKARANG</span>
+<span class="font-num-lg text-num-lg font-bold text-on-surface" id="digital-clock">12:45:00</span>
+</div>
+<div class="h-10 w-px bg-outline-variant mx-2"></div>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="wifi">wifi</span>
+</div>
+</header>
+<main class="flex h-[calc(100vh-144px)] w-full">
+<!-- LEFT SIDE: QUEUE (60%) -->
+<section class="w-3/5 p-gutter flex flex-col gap-gutter border-r border-outline-variant bg-surface-bright">
+<div class="flex items-center gap-4 mb-4">
+<span class="material-symbols-outlined text-primary text-4xl" data-icon="format_list_numbered">format_list_numbered</span>
+<h2 class="font-display-lg text-display-lg text-primary uppercase tracking-tight">Antrian</h2>
+</div>
+<div class="grid grid-cols-2 gap-stack-lg h-full">
+<!-- Column 1: SEDANG DIPROSES -->
+<div class="flex flex-col h-full bg-surface-container-low rounded-xl border border-outline-variant overflow-hidden">
+<div class="bg-secondary-container p-4 border-b border-outline-variant">
+<h3 class="font-headline-sm text-headline-sm text-on-secondary-container font-bold text-center">SEDANG DIPROSES</h3>
+</div>
+<div class="flex-1 p-6 grid grid-cols-2 gap-4 auto-rows-min">
+<!-- Queue Numbers -->
+<div class="bg-white p-4 rounded-lg border border-outline-variant shadow-sm text-center">
+<span class="font-num-lg text-4xl font-bold text-on-surface-variant">A012</span>
+</div>
+<div class="bg-white p-4 rounded-lg border border-outline-variant shadow-sm text-center">
+<span class="font-num-lg text-4xl font-bold text-on-surface-variant">A015</span>
+</div>
+<div class="bg-white p-4 rounded-lg border border-outline-variant shadow-sm text-center">
+<span class="font-num-lg text-4xl font-bold text-on-surface-variant">A016</span>
+</div>
+<div class="bg-white p-4 rounded-lg border border-outline-variant shadow-sm text-center">
+<span class="font-num-lg text-4xl font-bold text-on-surface-variant">B003</span>
+</div>
+<div class="bg-white p-4 rounded-lg border border-outline-variant shadow-sm text-center opacity-50">
+<span class="font-num-lg text-4xl font-bold text-on-surface-variant">B004</span>
+</div>
+<div class="bg-white p-4 rounded-lg border border-outline-variant shadow-sm text-center opacity-50">
+<span class="font-num-lg text-4xl font-bold text-on-surface-variant">A017</span>
+</div>
+</div>
+</div>
+<!-- Column 2: SIAP DIAMBIL -->
+<div class="flex flex-col h-full bg-surface rounded-xl border-4 border-primary shadow-lg overflow-hidden">
+<div class="bg-primary p-4 border-b border-primary">
+<h3 class="font-headline-sm text-headline-sm text-on-primary font-bold text-center">SIAP DIAMBIL</h3>
+</div>
+<div class="flex-1 p-6 flex flex-col gap-6 items-center justify-center">
+<!-- Pulsing Large Numbers -->
+<div class="animate-pulse-slow w-full bg-primary-fixed-dim py-8 px-10 rounded-2xl border border-primary flex flex-col items-center justify-center shadow-xl">
+<span class="font-num-lg text-8xl font-black text-on-primary-fixed tracking-widest">A010</span>
+<span class="font-label-caps text-label-caps text-primary font-bold mt-2">MEJA 04</span>
+</div>
+<div class="animate-pulse-slow delay-700 w-full bg-secondary-fixed py-8 px-10 rounded-2xl border border-secondary flex flex-col items-center justify-center shadow-xl">
+<span class="font-num-lg text-8xl font-black text-on-secondary-fixed tracking-widest">A008</span>
+<span class="font-label-caps text-label-caps text-secondary font-bold mt-2">TAKE AWAY</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- RIGHT SIDE: PROMO (40%) -->
+<section class="w-2/5 relative overflow-hidden group">
+<div class="absolute inset-0 z-0 h-full w-full">
+<img class="h-full w-full object-cover" data-alt="A cinematic, high-contrast close-up of a rustic wooden table featuring a tall glass of creamy iced milk coffee with dark espresso swirls and a side of crispy golden Indonesian cireng snacks with spicy dipping sauce. The lighting is warm and golden, reminiscent of a cozy afternoon coffee shop. The background is softly blurred showing the artisanal interior of a modern Warkop. The colors are rich with browns, creams, and golden yellows." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBXJ5svrs5YP1JnvCBSZHG4CeQpppEMMhta1nCjZuSjcPq60HVI78hd9qBrKCQLqXCUu-Ts6G3cSb313kOB2-wACPqbK6xPyplbQWAIS_AlJwNArlsL0Q5QAG4EY08kBCtfYLgS-q7Gz_Gk_fYQCzAPMI3_X6cUcgT2GaMnEQeYMs8VmnX8TxqU3P4jwz_NwlrwmHoml0lUAyocyJCvgekKsUf89h21p3tNjn-tS4ErTnheVRcpPIik"/>
+<!-- Dark Overlay for Readability -->
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+</div>
+<!-- Promo Text Content -->
+<div class="absolute bottom-0 left-0 right-0 p-margin-desktop z-10 flex flex-col gap-4">
+<div class="inline-block bg-error text-on-error px-4 py-2 rounded-lg self-start font-label-caps text-headline-sm font-bold shadow-lg">
+                    PROMO HARI INI
+                </div>
+<div>
+<h3 class="font-display-lg text-6xl text-white font-black leading-none drop-shadow-md">Kopi Susu + Cireng</h3>
+<p class="font-body-lg text-white/90 text-2xl mt-2 drop-shadow-md">Paduan sempurna untuk nongkrong sore Anda.</p>
+</div>
+<div class="flex items-baseline gap-4">
+<span class="font-num-lg text-5xl text-secondary-fixed font-black drop-shadow-lg">Rp 25.000</span>
+<span class="font-num-md text-2xl text-white/60 line-through">Rp 35.000</span>
+</div>
+</div>
+<!-- Small QR Code Overlay -->
+<div class="absolute top-margin-desktop right-margin-desktop glass-panel p-4 rounded-xl flex flex-col items-center gap-2 shadow-xl">
+<div class="w-24 h-24 bg-white p-1 rounded-lg">
+<img class="w-full h-full" data-alt="A clean, minimalist QR code on a white background, representing a digital menu link for a modern coffee shop POS system." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDT22g8KcMa-eaoXSDDi-6aVJ0vVg4ZKNynJ_iuFBfDnvaFZ8jOF69i6nKG-fbXM0cSWjYe35j42__NvLjJCSfKUHzIXeMkw5h_u2_a3yuMaBG8ZZWDJjgtcHP8yEY5ZjLS-dRNqAhk4y_F4coBKF89veXjQQ_FHzoXILFSuyUMSOhCqd7Jr6MW1uRwAw5pfLdHY-X4qBEo2spc19tqJingHTlVINpEEOYApHCbOTn9eQ6BHwAFa8II"/>
+</div>
+<span class="font-label-caps text-[10px] text-on-surface font-bold text-center">CEK MENU<br/>DIGITAL</span>
+</div>
+</section>
+</main>
+<!-- FOOTER: TICKER -->
+<footer class="h-20 bg-inverse-surface flex items-center overflow-hidden border-t border-primary/20">
+<div class="bg-primary px-8 h-full flex items-center z-20 shadow-xl">
+<span class="font-label-caps text-white font-black whitespace-nowrap text-lg">INFO KEDAI</span>
+</div>
+<div class="marquee flex-1 text-on-tertiary-container font-body-md text-xl italic font-medium">
+<span>
+                Selamat datang di Warkop Digital Station 01 • Nikmati Wi-Fi gratis sepuasnya dengan pembelian minimal Rp 20.000 • Gunakan kode promo 'WARKOPCASH' untuk cashback 10% pembayaran via E-Wallet • Kami buka hingga pukul 23:00 WIB • Ingin reservasi tempat? Hubungi WhatsApp kami di 0812-3456-7890 • Terima kasih telah memesan!
+            </span>
+</div>
+</footer>
+<script>
+        // Update Digital Clock
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('digital-clock').textContent = `${hours}:${minutes}:${seconds}`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Optional: Audio notification logic for new "Siap Diambil" items
+        // In a real TV display, we would trigger a "Ding-Dong" sound here
+        let lastQueue = "A010";
+        function checkNewQueue() {
+            // Simulated polling
+            const currentQueues = ["A010", "A008"];
+            // Logic would go here to play sound if new number added
+        }
+
+        // Randomly simulate queue shifts for visual demo
+        setInterval(() => {
+            const list = document.querySelector('.grid-cols-2.gap-4');
+            const items = list.querySelectorAll('div');
+            // Shift opacity to simulate movement
+            items.forEach(item => {
+                if (Math.random() > 0.8) {
+                    item.classList.toggle('opacity-50');
+                }
+            });
+        }, 5000);
+    </script>
+</body></html>

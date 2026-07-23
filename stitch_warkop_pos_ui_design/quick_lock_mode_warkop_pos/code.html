@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Warkop POS - Quick Lock</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Inter:wght@400;500;700&family=JetBrains+Mono:wght@500;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Plus+Jakarta+Sans:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .numpad-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+        .blur-overlay {
+            backdrop-filter: blur(8px) brightness(0.6);
+        }
+        .pin-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid #807569;
+            transition: all 0.2s ease;
+        }
+        .pin-dot.filled {
+            background-color: #705327;
+            border-color: #705327;
+            transform: scale(1.2);
+        }
+        .active-press:active {
+            transform: scale(0.95);
+            background-color: #fadc9b;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#251a00",
+                        "tertiary-fixed": "#e6e2dd",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed-variant": "#484643",
+                        "surface-bright": "#fff8f4",
+                        "tertiary": "#5a5854",
+                        "surface-container-high": "#fde4cb",
+                        "on-secondary": "#ffffff",
+                        "outline": "#807569",
+                        "surface-tint": "#77592d",
+                        "surface": "#fff8f4",
+                        "secondary-fixed": "#fddf9e",
+                        "background": "#fff8f4",
+                        "surface-container": "#ffebd6",
+                        "primary-container": "#8b6b3d",
+                        "surface-variant": "#f7dfc5",
+                        "primary-fixed": "#ffddb2",
+                        "outline-variant": "#d2c4b6",
+                        "error-container": "#ffdad6",
+                        "on-primary-fixed-variant": "#5d4218",
+                        "error": "#ba1a1a",
+                        "surface-dim": "#eed6bd",
+                        "secondary-fixed-dim": "#e0c384",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed": "#1d1b19",
+                        "secondary-container": "#fadc9b",
+                        "on-primary-fixed": "#291800",
+                        "on-tertiary-container": "#faf5f0",
+                        "on-surface": "#25190a",
+                        "surface-container-highest": "#f7dfc5",
+                        "inverse-on-surface": "#ffeede",
+                        "on-background": "#25190a",
+                        "inverse-surface": "#3c2e1d",
+                        "on-secondary-container": "#76602b",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed-variant": "#584411",
+                        "tertiary-container": "#73706c",
+                        "on-primary-container": "#fff4ea",
+                        "on-surface-variant": "#4e453b",
+                        "primary-fixed-dim": "#e8c08b",
+                        "inverse-primary": "#e8c08b",
+                        "surface-container-low": "#fff1e5",
+                        "primary": "#705327",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed-dim": "#cac6c1",
+                        "secondary": "#715c27",
+                        "on-primary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-md": "16px",
+                        "stack-sm": "8px",
+                        "stack-lg": "24px",
+                        "gutter": "16px",
+                        "touch-ideal": "56px",
+                        "margin-mobile": "16px",
+                        "touch-min": "48px",
+                        "margin-desktop": "32px"
+                    },
+                    "fontFamily": {
+                        "num-lg": ["JetBrains Mono"],
+                        "body-md": ["Inter"],
+                        "num-md": ["JetBrains Mono"],
+                        "label-caps": ["Inter"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "body-lg": ["Inter"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "body-sm": ["Inter"],
+                        "headline-sm": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "num-lg": ["20px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "num-md": ["16px", {"lineHeight": "20px", "fontWeight": "500"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "headline-md": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "headline-sm": ["24px", {"lineHeight": "32px", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background font-body-md text-on-background overflow-hidden h-screen w-screen relative">
+<!-- Background: Blurred POS Screen Mockup -->
+<div class="absolute inset-0 z-0">
+<div class="w-full h-full bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDhZyXIDk58YdV7JvrOIgat7LwHD9lW9e8zP3SBKQFJzcxcDcT78N9hRxf16ze4jtgpbUIr9RH9sNO0Du2SHjuTTah2KOYrnkDpcHt4qvFnOoSDThk8XzSzZAv4ayQaz-a7WXD9e_64czie-4-zMzc_GpIMPTMhoWus8A1op2r2Uckmvhdg85GC2_PrS3CqkHKiwKnOWjUnWnMzQFw5cAj_6Fah30XH_TeISGIzNb4Eo2T9I7IG2Mrm')"></div>
+<div class="absolute inset-0 blur-overlay z-10"></div>
+</div>
+<!-- Lock Screen Container -->
+<main class="relative z-20 flex flex-col items-center justify-center h-full w-full p-gutter">
+<!-- Header Section -->
+<header class="text-center mb-stack-lg animate-fade-in-down">
+<div class="flex items-center justify-center gap-stack-sm mb-2">
+<span class="material-symbols-outlined text-on-primary-container bg-primary-container p-2 rounded-full" style="font-size: 32px;">lock</span>
+</div>
+<h1 class="font-headline-md text-headline-md text-white mb-1 tracking-tight">System Locked</h1>
+<div class="font-num-lg text-num-lg text-secondary-fixed mb-4" id="clock">14:20:15</div>
+<!-- User Status Chip -->
+<div class="inline-flex items-center gap-2 bg-surface-container-low/20 backdrop-blur-md px-4 py-2 rounded-full border border-outline-variant/30">
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-xs">S</div>
+<div class="text-left">
+<p class="font-label-caps text-label-caps text-surface-bright/80 leading-none">Logged in as</p>
+<p class="font-body-sm text-body-sm text-white font-bold">Siti - Kasir</p>
+</div>
+</div>
+</header>
+<!-- PIN Entry Modal -->
+<section class="bg-surface-container-lowest w-full max-w-[440px] rounded-xl shadow-xl overflow-hidden border border-outline-variant animate-scale-up">
+<div class="p-stack-lg flex flex-col items-center">
+<!-- PIN Display Dots -->
+<div class="flex gap-4 mb-stack-lg" id="pin-display">
+<div class="pin-dot"></div>
+<div class="pin-dot"></div>
+<div class="pin-dot"></div>
+<div class="pin-dot"></div>
+</div>
+<!-- Numpad Grid -->
+<div class="numpad-grid w-full mb-stack-lg">
+<button class="h-touch-ideal bg-surface-container-low flex items-center justify-center font-headline-sm text-headline-sm rounded-lg active-press transition-colors border border-outline-variant/50" onclick="pressKey('1')">1</button>
+<button class="h-touch-ideal bg-surface-container-low flex items-center justify-center font-headline-sm text-headline-sm rounded-lg active-press transition-colors border border-outline-variant/50" onclick="pressKey('2')">2</button>
+<button class="h-touch-ideal bg-surface-container-low flex items-center justify-center font-headline-sm text-headline-sm rounded-lg active-press transition-colors border border-outline-variant/50" onclick="pressKey('3')">3</button>
+<button class="h-touch-ideal bg-surface-container-low flex items-center justify-center font-headline-sm text-headline-sm rounded-lg active-press transition-colors border border-outline-variant/50" onclick="pressKey('4')">4</button>
+<button class="h-touch-ideal bg-surface-container-low flex items-center justify-center font-headline-sm text-headline-sm rounded-lg active-press transition-colors border border-outline-variant/50" onclick="pressKey('5')">5</button>
+<button class="h-touch-ideal bg-surface-container-low flex items-center justify-center font-headline-sm text-headline-sm rounded-lg active-press transition-colors border border-outline-variant/50" onclick="pressKey('6')">6</button>
+<button class="h-touch-ideal bg-surface-container-low flex items-center justify-center font-headline-sm text-headline-sm rounded-lg active-press transition-colors border border-outline-variant/50" onclick="pressKey('7')">7</button>
+<button class="h-touch-ideal bg-surface-container-low flex items-center justify-center font-headline-sm text-headline-sm rounded-lg active-press transition-colors border border-outline-variant/50" onclick="pressKey('8')">8</button>
+<button class="h-touch-ideal bg-surface-container-low flex items-center justify-center font-headline-sm text-headline-sm rounded-lg active-press transition-colors border border-outline-variant/50" onclick="pressKey('9')">9</button>
+<button class="h-touch-ideal flex items-center justify-center text-error font-bold rounded-lg active-press" onclick="clearPin()">Clear</button>
+<button class="h-touch-ideal bg-surface-container-low flex items-center justify-center font-headline-sm text-headline-sm rounded-lg active-press transition-colors border border-outline-variant/50" onclick="pressKey('0')">0</button>
+<button class="h-touch-ideal flex items-center justify-center text-on-surface-variant rounded-lg active-press" onclick="backspace()">
+<span class="material-symbols-outlined">backspace</span>
+</button>
+</div>
+<!-- Action Buttons -->
+<div class="flex flex-col w-full gap-stack-sm">
+<button class="w-full h-touch-ideal bg-primary text-white font-bold text-body-lg rounded-lg shadow-md flex items-center justify-center gap-2 transition-all hover:bg-primary/90 disabled:opacity-50 disabled:grayscale cursor-not-allowed" disabled="" id="unlock-btn" onclick="validatePin()">
+<span class="material-symbols-outlined">lock_open</span>
+                        Unlock
+                    </button>
+<button class="w-full h-touch-min text-primary font-bold text-label-caps tracking-widest uppercase hover:bg-surface-variant/20 rounded-lg transition-colors flex items-center justify-center gap-1">
+<span class="material-symbols-outlined" style="font-size: 18px;">group</span>
+                        Switch User
+                    </button>
+</div>
+</div>
+<!-- Footer Meta -->
+<div class="bg-surface-container-low px-stack-lg py-3 flex justify-between items-center border-t border-outline-variant">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Version 2.4.1-Stable</span>
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm" style="font-size: 16px;">wifi</span>
+<span class="font-label-caps text-label-caps">Station 01 Connected</span>
+</div>
+</div>
+</section>
+<!-- Help Link -->
+<p class="mt-8 text-surface-bright/60 font-body-sm flex items-center gap-1">
+            Forgot PIN? Contact Supervisor 
+            <span class="material-symbols-outlined text-sm" style="font-size: 16px;">help_center</span>
+</p>
+</main>
+<script>
+        let pin = "";
+        const maxPinLength = 4;
+        const dots = document.querySelectorAll('.pin-dot');
+        const unlockBtn = document.getElementById('unlock-btn');
+
+        function pressKey(num) {
+            if (pin.length < maxPinLength) {
+                pin += num;
+                updateDisplay();
+                
+                // Haptic simulation feedback
+                if ('vibrate' in navigator) {
+                    navigator.vibrate(20);
+                }
+            }
+        }
+
+        function backspace() {
+            pin = pin.slice(0, -1);
+            updateDisplay();
+        }
+
+        function clearPin() {
+            pin = "";
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            dots.forEach((dot, index) => {
+                if (index < pin.length) {
+                    dot.classList.add('filled');
+                } else {
+                    dot.classList.remove('filled');
+                }
+            });
+
+            if (pin.length === maxPinLength) {
+                unlockBtn.disabled = false;
+                unlockBtn.classList.remove('cursor-not-allowed', 'grayscale', 'opacity-50');
+            } else {
+                unlockBtn.disabled = true;
+                unlockBtn.classList.add('cursor-not-allowed', 'grayscale', 'opacity-50');
+            }
+        }
+
+        function validatePin() {
+            // Simplified success logic
+            if (pin === "1234") {
+                unlockBtn.innerHTML = `<span class="material-symbols-outlined animate-spin">sync</span> Validating...`;
+                setTimeout(() => {
+                    alert("System Unlocked! Redirecting to Dashboard...");
+                    window.location.reload();
+                }, 1000);
+            } else {
+                const modal = document.querySelector('section');
+                modal.classList.add('animate-shake');
+                unlockBtn.classList.add('bg-error');
+                unlockBtn.innerText = "Incorrect PIN";
+                
+                setTimeout(() => {
+                    modal.classList.remove('animate-shake');
+                    unlockBtn.classList.remove('bg-error');
+                    unlockBtn.innerHTML = `<span class="material-symbols-outlined">lock_open</span> Unlock`;
+                    clearPin();
+                }, 800);
+            }
+        }
+
+        // Live Clock
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', { 
+                hour12: false, 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit' 
+            });
+            document.getElementById('clock').textContent = timeString;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Add shake animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-10px); }
+                75% { transform: translateX(10px); }
+            }
+            .animate-shake {
+                animation: shake 0.2s cubic-bezier(.36,.07,.19,.97) both;
+                animation-iteration-count: 2;
+            }
+            @keyframes fadeInDown {
+                from { opacity: 0; transform: translateY(-20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .animate-fade-in-down {
+                animation: fadeInDown 0.6s ease-out forwards;
+            }
+            @keyframes scaleUp {
+                from { opacity: 0; transform: scale(0.95); }
+                to { opacity: 1; transform: scale(1); }
+            }
+            .animate-scale-up {
+                animation: scaleUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body></html>

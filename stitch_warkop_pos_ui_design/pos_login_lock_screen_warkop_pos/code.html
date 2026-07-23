@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Warkop POS - Staff Login</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;700&family=JetBrains+Mono:wght@500;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Plus+Jakarta+Sans:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .pin-dot-active {
+            background-color: #705327;
+            transform: scale(1.2);
+        }
+        .staff-card-active {
+            border-color: #705327;
+            background-color: #ffebd6;
+        }
+        .numpad-press:active {
+            transform: scale(0.95);
+            background-color: #f7dfc5;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#251a00",
+                        "tertiary-fixed": "#e6e2dd",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed-variant": "#484643",
+                        "surface-bright": "#fff8f4",
+                        "tertiary": "#5a5854",
+                        "surface-container-high": "#fde4cb",
+                        "on-secondary": "#ffffff",
+                        "outline": "#807569",
+                        "surface-tint": "#77592d",
+                        "surface": "#fff8f4",
+                        "secondary-fixed": "#fddf9e",
+                        "background": "#fff8f4",
+                        "surface-container": "#ffebd6",
+                        "primary-container": "#8b6b3d",
+                        "surface-variant": "#f7dfc5",
+                        "primary-fixed": "#ffddb2",
+                        "outline-variant": "#d2c4b6",
+                        "error-container": "#ffdad6",
+                        "on-primary-fixed-variant": "#5d4218",
+                        "error": "#ba1a1a",
+                        "surface-dim": "#eed6bd",
+                        "secondary-fixed-dim": "#e0c384",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed": "#1d1b19",
+                        "secondary-container": "#fadc9b",
+                        "on-primary-fixed": "#291800",
+                        "on-tertiary-container": "#faf5f0",
+                        "on-surface": "#25190a",
+                        "surface-container-highest": "#f7dfc5",
+                        "inverse-on-surface": "#ffeede",
+                        "on-background": "#25190a",
+                        "inverse-surface": "#3c2e1d",
+                        "on-secondary-container": "#76602b",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed-variant": "#584411",
+                        "tertiary-container": "#73706c",
+                        "on-primary-container": "#fff4ea",
+                        "on-surface-variant": "#4e453b",
+                        "primary-fixed-dim": "#e8c08b",
+                        "inverse-primary": "#e8c08b",
+                        "surface-container-low": "#fff1e5",
+                        "primary": "#705327",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed-dim": "#cac6c1",
+                        "secondary": "#715c27",
+                        "on-primary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-md": "16px",
+                        "stack-sm": "8px",
+                        "stack-lg": "24px",
+                        "gutter": "16px",
+                        "touch-ideal": "56px",
+                        "margin-mobile": "16px",
+                        "touch-min": "48px",
+                        "margin-desktop": "32px"
+                    },
+                    "fontFamily": {
+                        "num-lg": ["JetBrains Mono"],
+                        "body-md": ["Inter"],
+                        "num-md": ["JetBrains Mono"],
+                        "label-caps": ["Inter"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "body-lg": ["Inter"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "body-sm": ["Inter"],
+                        "headline-sm": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "num-lg": ["20px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "num-md": ["16px", {"lineHeight": "20px", "fontWeight": "500"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "headline-md": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "headline-sm": ["24px", {"lineHeight": "32px", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col overflow-hidden">
+<!-- Top Navigation Bar (Simplified for Login) -->
+<header class="flex justify-between items-center w-full px-margin-desktop h-touch-ideal sticky top-0 z-50 bg-surface border-b border-outline-variant">
+<div class="flex items-center gap-stack-sm">
+<span class="material-symbols-outlined text-primary text-headline-sm">coffee</span>
+<h1 class="font-headline-sm text-headline-sm font-bold text-primary">Warkop POS</h1>
+</div>
+<div class="flex items-center gap-stack-lg">
+<div class="relative group">
+<button class="flex items-center gap-2 bg-surface-container-low px-4 py-2 rounded-lg border border-outline-variant hover:bg-surface-container transition-colors">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Outlet:</span>
+<span class="font-body-md text-on-surface font-semibold">Warkop POS - Cabang Sudirman</span>
+<span class="material-symbols-outlined text-on-surface-variant">expand_more</span>
+</button>
+</div>
+<a class="font-label-caps text-label-caps text-primary hover:underline font-bold" href="#">Login Admin via Email</a>
+</div>
+</header>
+<main class="flex-grow flex items-center justify-center p-gutter">
+<!-- Main Login Container -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm w-full max-w-5xl flex flex-col lg:flex-row overflow-hidden min-h-[600px]">
+<!-- Left Side: Staff Selection -->
+<div class="flex-1 p-stack-lg border-r border-outline-variant bg-surface-bright">
+<div class="mb-stack-lg">
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-bold">Pilih Petugas</h2>
+<p class="text-on-surface-variant text-body-sm">Silakan pilih akun Anda untuk memulai shift</p>
+</div>
+<div class="grid grid-cols-2 gap-gutter">
+<!-- Staff Card 1 -->
+<button class="staff-card flex flex-col items-center p-gutter border border-outline-variant rounded-xl hover:bg-surface-container-low transition-all duration-200 group active:scale-95" onclick="selectStaff('Budi', 'Supervisor')">
+<div class="w-24 h-24 rounded-full mb-stack-sm overflow-hidden border-4 border-surface shadow-sm group-hover:border-primary-fixed-dim transition-all">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a friendly middle-aged Indonesian man wearing a neat brown apron, set against a soft blurred background of a modern coffee shop interior. Warm lighting and high-contrast professional photography style consistent with a premium POS interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAIKyQXjlq7oRT7O7-8RMomh4yxDtdrHdDTkSjKLIXio9jQG8g55-5zi-epYCyB_KV5dfxhZjGREpQBiA8Ewp4sZyEGpqkR8Dexnp90lwUEHCupdAfZ46A99WVTOTVECJaFcJRXSw5cdcvu2BmbnDbJ4v-wXNgf4B4RcZN42Vt-4wlx7KjOM5zsIOqTFecKUnEGr4aLV-gk7dbZpE66u-tD6bz79p8tv14gkeKcyR3FjSE32O_iWFDp"/>
+</div>
+<span class="font-body-md font-bold text-on-surface">Budi</span>
+<span class="font-label-caps text-[10px] text-on-surface-variant bg-surface-variant px-2 py-0.5 rounded-full mt-1">Supervisor</span>
+</button>
+<!-- Staff Card 2 -->
+<button class="staff-card flex flex-col items-center p-gutter border border-outline-variant rounded-xl hover:bg-surface-container-low transition-all duration-200 group active:scale-95" onclick="selectStaff('Siti', 'Kasir')">
+<div class="w-24 h-24 rounded-full mb-stack-sm overflow-hidden border-4 border-surface shadow-sm group-hover:border-primary-fixed-dim transition-all">
+<img class="w-full h-full object-cover" data-alt="A smiling young Indonesian woman with a hijab, dressed in a professional barista uniform, photographed in a high-key bright cafe setting with soft natural morning light. The portrait is centered and crisp, suitable for a digital staff profile avatar." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD9Q7R0csPh-10W8WR7IcfS_X9q57c8MonNmxZh4JM4Pgje7WuSRj2IvRpOm81AATSK6bGC6K81urzrS073GlLc8EGjQwsYTGd9wbkm8DY5JGNpDEAaZvy0m0iRFxevXXM5-jFJsCll1eZ26Zd-qNZOxZ3Gyya5qKIOkvmLmLaajgBFOl6_V3NvBFYOqdJdeamjIFecFMJF5HoW-6LvkGTuLhbN5A1Tl2XrUdv6UqE_Yfs7Fnp4oh4T"/>
+</div>
+<span class="font-body-md font-bold text-on-surface">Siti</span>
+<span class="font-label-caps text-[10px] text-on-surface-variant bg-surface-variant px-2 py-0.5 rounded-full mt-1">Kasir</span>
+</button>
+<!-- Staff Card 3 -->
+<button class="staff-card flex flex-col items-center p-gutter border border-outline-variant rounded-xl hover:bg-surface-container-low transition-all duration-200 group active:scale-95" onclick="selectStaff('Agus', 'Barista')">
+<div class="w-24 h-24 rounded-full mb-stack-sm overflow-hidden border-4 border-surface shadow-sm group-hover:border-primary-fixed-dim transition-all">
+<img class="w-full h-full object-cover" data-alt="A cool young Indonesian barista man with a focus on his craft, wearing a dark canvas apron and a small cap, in a moody but well-lit espresso bar environment. Professional studio lighting with warm coffee-toned color grading." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcS3KEwhXLyLgLMTh-Iwja4iHlhz3lK0l5pMIp4YfSSsDT_fht_PFyjFMAXMkvlBYV3uNSqeSiLLuFY3yZqhwhVmMWUS53iQT3RbapLMT-sOA_7ZkYj7TBC_q6XpX2DskxM39rKW9yzo91dHyIbpByP9YixxDz6NXXttPvbgYsiN1A2JjHKvdvnThtc4MZRJJLTjJipLI29GSPmGnDVCb8nksn5xxe5LHT4IR8i1nrBpBrI1mikF2m"/>
+</div>
+<span class="font-body-md font-bold text-on-surface">Agus</span>
+<span class="font-label-caps text-[10px] text-on-surface-variant bg-surface-variant px-2 py-0.5 rounded-full mt-1">Barista</span>
+</button>
+<!-- Staff Card 4 -->
+<button class="staff-card flex flex-col items-center p-gutter border border-outline-variant rounded-xl hover:bg-surface-container-low transition-all duration-200 group active:scale-95" onclick="selectStaff('Rani', 'Kitchen')">
+<div class="w-24 h-24 rounded-full mb-stack-sm overflow-hidden border-4 border-surface shadow-sm group-hover:border-primary-fixed-dim transition-all">
+<img class="w-full h-full object-cover" data-alt="A focused young Indonesian female chef wearing a clean white kitchen uniform, standing in a bright modern commercial kitchen space with warm wood accents. The lighting is bright and professional, creating a clean and reliable appearance for the kitchen staff profile." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3OK4xkoH6eWMw9llMxPF6ceBkbGZBfMcEIPOMVZeDkbF4kSYBULoKKz7fF9TFaJuEGqTgoz9UGfcIq6TMoP5kqlzNpnajibx1rQqzoqPN-rFkiyKCU8mzP9GoRnc5YtPiinm8QzNPyVpNM7BJ-zPfX3hJaDcBlnsRH871bXsNwDKQfZ9Lfysdz84bRaqdnqq3z3CwPhrVbT4WGt6fnvRycN7fAhOMYWaYcCagBty-i7jNLTxwvlhV"/>
+</div>
+<span class="font-body-md font-bold text-on-surface">Rani</span>
+<span class="font-label-caps text-[10px] text-on-surface-variant bg-surface-variant px-2 py-0.5 rounded-full mt-1">Kitchen</span>
+</button>
+</div>
+</div>
+<!-- Right Side: PIN Entry -->
+<div class="w-full lg:w-[400px] p-stack-lg flex flex-col items-center justify-between bg-surface">
+<div class="text-center w-full">
+<div class="mb-stack-md opacity-0 transition-opacity duration-300" id="staff-display">
+<p class="font-label-caps text-label-caps text-primary uppercase">Masukan PIN untuk</p>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-extrabold" id="active-staff-name">-</h3>
+</div>
+<!-- PIN Indicators -->
+<div class="flex justify-center gap-stack-md my-stack-lg">
+<div class="pin-dot w-4 h-4 rounded-full border-2 border-outline-variant bg-transparent transition-all"></div>
+<div class="pin-dot w-4 h-4 rounded-full border-2 border-outline-variant bg-transparent transition-all"></div>
+<div class="pin-dot w-4 h-4 rounded-full border-2 border-outline-variant bg-transparent transition-all"></div>
+<div class="pin-dot w-4 h-4 rounded-full border-2 border-outline-variant bg-transparent transition-all"></div>
+<div class="pin-dot w-4 h-4 rounded-full border-2 border-outline-variant bg-transparent transition-all"></div>
+<div class="pin-dot w-4 h-4 rounded-full border-2 border-outline-variant bg-transparent transition-all"></div>
+</div>
+</div>
+<!-- Numpad Grid -->
+<div class="grid grid-cols-3 gap-4 w-full max-w-[320px]">
+<button class="numpad-press h-20 rounded-xl bg-surface-container-low border border-outline-variant flex items-center justify-center font-num-lg text-headline-sm text-on-surface hover:bg-surface-variant transition-all" onclick="pressKey('1')">1</button>
+<button class="numpad-press h-20 rounded-xl bg-surface-container-low border border-outline-variant flex items-center justify-center font-num-lg text-headline-sm text-on-surface hover:bg-surface-variant transition-all" onclick="pressKey('2')">2</button>
+<button class="numpad-press h-20 rounded-xl bg-surface-container-low border border-outline-variant flex items-center justify-center font-num-lg text-headline-sm text-on-surface hover:bg-surface-variant transition-all" onclick="pressKey('3')">3</button>
+<button class="numpad-press h-20 rounded-xl bg-surface-container-low border border-outline-variant flex items-center justify-center font-num-lg text-headline-sm text-on-surface hover:bg-surface-variant transition-all" onclick="pressKey('4')">4</button>
+<button class="numpad-press h-20 rounded-xl bg-surface-container-low border border-outline-variant flex items-center justify-center font-num-lg text-headline-sm text-on-surface hover:bg-surface-variant transition-all" onclick="pressKey('5')">5</button>
+<button class="numpad-press h-20 rounded-xl bg-surface-container-low border border-outline-variant flex items-center justify-center font-num-lg text-headline-sm text-on-surface hover:bg-surface-variant transition-all" onclick="pressKey('6')">6</button>
+<button class="numpad-press h-20 rounded-xl bg-surface-container-low border border-outline-variant flex items-center justify-center font-num-lg text-headline-sm text-on-surface hover:bg-surface-variant transition-all" onclick="pressKey('7')">7</button>
+<button class="numpad-press h-20 rounded-xl bg-surface-container-low border border-outline-variant flex items-center justify-center font-num-lg text-headline-sm text-on-surface hover:bg-surface-variant transition-all" onclick="pressKey('8')">8</button>
+<button class="numpad-press h-20 rounded-xl bg-surface-container-low border border-outline-variant flex items-center justify-center font-num-lg text-headline-sm text-on-surface hover:bg-surface-variant transition-all" onclick="pressKey('9')">9</button>
+<button class="numpad-press h-20 rounded-xl bg-error-container text-on-error-container border border-error/20 flex items-center justify-center font-label-caps text-label-caps font-bold hover:bg-error/10 transition-all uppercase" onclick="clearPin()">Batal</button>
+<button class="numpad-press h-20 rounded-xl bg-surface-container-low border border-outline-variant flex items-center justify-center font-num-lg text-headline-sm text-on-surface hover:bg-surface-variant transition-all" onclick="pressKey('0')">0</button>
+<button class="numpad-press h-20 rounded-xl bg-surface-container-high border border-outline-variant flex items-center justify-center text-on-surface-variant hover:bg-surface-variant transition-all" onclick="deleteLast()">
+<span class="material-symbols-outlined">backspace</span>
+</button>
+</div>
+<div class="w-full mt-stack-lg">
+<button class="w-full h-touch-ideal bg-primary text-on-primary font-bold rounded-xl shadow-md flex items-center justify-center gap-2 opacity-50 cursor-not-allowed transition-all" disabled="" id="login-btn">
+<span>Masuk Sekarang</span>
+<span class="material-symbols-outlined">login</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom: Device Mode Selector -->
+<footer class="p-stack-lg flex flex-col items-center gap-stack-sm">
+<p class="font-label-caps text-label-caps text-on-surface-variant opacity-60">Pilih Mode Perangkat</p>
+<div class="flex bg-surface-container-high p-1 rounded-xl border border-outline-variant max-w-2xl w-full">
+<button class="mode-toggle flex-1 h-12 rounded-lg bg-primary text-on-primary font-bold text-body-sm transition-all flex items-center justify-center gap-2" onclick="setMode(this)">
+<span class="material-symbols-outlined text-[20px]">point_of_sale</span>
+<span>POS Kasir</span>
+</button>
+<button class="mode-toggle flex-1 h-12 rounded-lg text-on-surface-variant font-medium text-body-sm hover:bg-surface-variant transition-all flex items-center justify-center gap-2" onclick="setMode(this)">
+<span class="material-symbols-outlined text-[20px]">restaurant</span>
+<span>KDS Barista</span>
+</button>
+<button class="mode-toggle flex-1 h-12 rounded-lg text-on-surface-variant font-medium text-body-sm hover:bg-surface-variant transition-all flex items-center justify-center gap-2" onclick="setMode(this)">
+<span class="material-symbols-outlined text-[20px]">flatware</span>
+<span>KDS Dapur</span>
+</button>
+<button class="mode-toggle flex-1 h-12 rounded-lg text-on-surface-variant font-medium text-body-sm hover:bg-surface-variant transition-all flex items-center justify-center gap-2" onclick="setMode(this)">
+<span class="material-symbols-outlined text-[20px]">tv</span>
+<span>Customer</span>
+</button>
+</div>
+</footer>
+<script>
+        let currentPin = "";
+        const maxPinLength = 6;
+        let selectedStaffName = "";
+
+        function selectStaff(name, role) {
+            // Remove active classes from all cards
+            document.querySelectorAll('.staff-card').forEach(card => {
+                card.classList.remove('staff-card-active', 'border-primary', 'bg-primary-container/10');
+            });
+            
+            // Add to event source
+            const card = event.currentTarget;
+            card.classList.add('staff-card-active', 'border-primary');
+            
+            selectedStaffName = name;
+            const staffDisplay = document.getElementById('staff-display');
+            const nameEl = document.getElementById('active-staff-name');
+            
+            nameEl.innerText = name;
+            staffDisplay.classList.remove('opacity-0');
+            staffDisplay.classList.add('opacity-100');
+            
+            clearPin();
+        }
+
+        function pressKey(num) {
+            if (currentPin.length < maxPinLength) {
+                currentPin += num;
+                updateDots();
+            }
+        }
+
+        function deleteLast() {
+            currentPin = currentPin.slice(0, -1);
+            updateDots();
+        }
+
+        function clearPin() {
+            currentPin = "";
+            updateDots();
+        }
+
+        function updateDots() {
+            const dots = document.querySelectorAll('.pin-dot');
+            dots.forEach((dot, index) => {
+                if (index < currentPin.length) {
+                    dot.classList.add('pin-dot-active');
+                    dot.classList.remove('border-outline-variant');
+                } else {
+                    dot.classList.remove('pin-dot-active');
+                    dot.classList.add('border-outline-variant');
+                }
+            });
+
+            const loginBtn = document.getElementById('login-btn');
+            if (currentPin.length >= 4 && selectedStaffName !== "") {
+                loginBtn.disabled = false;
+                loginBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                loginBtn.classList.add('hover:bg-primary-container', 'active:scale-95');
+            } else {
+                loginBtn.disabled = true;
+                loginBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                loginBtn.classList.remove('hover:bg-primary-container', 'active:scale-95');
+            }
+        }
+
+        function setMode(btn) {
+            document.querySelectorAll('.mode-toggle').forEach(b => {
+                b.classList.remove('bg-primary', 'text-on-primary', 'font-bold');
+                b.classList.add('text-on-surface-variant', 'font-medium');
+            });
+            btn.classList.remove('text-on-surface-variant', 'font-medium');
+            btn.classList.add('bg-primary', 'text-on-primary', 'font-bold');
+        }
+
+        // Handle success simulation
+        document.getElementById('login-btn').addEventListener('click', function() {
+            if (!this.disabled) {
+                this.innerHTML = `
+                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Memproses...</span>
+                `;
+                setTimeout(() => {
+                    alert('Selamat datang, ' + selectedStaffName + '! Shift Anda telah dimulai.');
+                    window.location.reload();
+                }, 1500);
+            }
+        });
+    </script>
+</body></html>

@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Customer Ledger | Warkop POS</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #d2c4b6;
+            border-radius: 10px;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(229, 224, 218, 0.5);
+        }
+    </style>
+<!-- Insert Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "outline": "#807569",
+                      "on-secondary": "#ffffff",
+                      "outline-variant": "#d2c4b6",
+                      "primary-container": "#8b6b3d",
+                      "on-secondary-fixed-variant": "#584411",
+                      "primary-fixed-dim": "#e8c08b",
+                      "background": "#fff8f4",
+                      "tertiary-container": "#73706c",
+                      "on-tertiary-fixed": "#1d1b19",
+                      "inverse-primary": "#e8c08b",
+                      "on-tertiary": "#ffffff",
+                      "on-tertiary-container": "#faf5f0",
+                      "inverse-surface": "#3c2e1d",
+                      "inverse-on-surface": "#ffeede",
+                      "on-tertiary-fixed-variant": "#484643",
+                      "secondary-fixed": "#fddf9e",
+                      "on-surface-variant": "#4e453b",
+                      "tertiary": "#5a5854",
+                      "on-secondary-fixed": "#251a00",
+                      "tertiary-fixed": "#e6e2dd",
+                      "secondary-container": "#fadc9b",
+                      "on-primary-container": "#fff4ea",
+                      "on-primary": "#ffffff",
+                      "surface-variant": "#f7dfc5",
+                      "surface-container-high": "#fde4cb",
+                      "surface-container-lowest": "#ffffff",
+                      "surface": "#fff8f4",
+                      "on-primary-fixed-variant": "#5d4218",
+                      "surface-container-highest": "#f7dfc5",
+                      "secondary": "#715c27",
+                      "surface-tint": "#77592d",
+                      "on-primary-fixed": "#291800",
+                      "surface-bright": "#fff8f4",
+                      "on-error": "#ffffff",
+                      "on-surface": "#25190a",
+                      "secondary-fixed-dim": "#e0c384",
+                      "primary-fixed": "#ffddb2",
+                      "surface-dim": "#eed6bd",
+                      "on-secondary-container": "#76602b",
+                      "error-container": "#ffdad6",
+                      "error": "#ba1a1a",
+                      "surface-container-low": "#fff1e5",
+                      "tertiary-fixed-dim": "#cac6c1",
+                      "primary": "#705327",
+                      "on-error-container": "#93000a",
+                      "surface-container": "#ffebd6",
+                      "on-background": "#25190a"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "stack-sm": "8px",
+                      "margin-desktop": "32px",
+                      "touch-ideal": "56px",
+                      "margin-mobile": "16px",
+                      "touch-min": "48px",
+                      "stack-md": "16px",
+                      "stack-lg": "24px",
+                      "gutter": "16px"
+              },
+              "fontFamily": {
+                      "num-md": ["JetBrains Mono"],
+                      "num-lg": ["JetBrains Mono"],
+                      "label-caps": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "body-sm": ["Inter"],
+                      "headline-md": ["Plus Jakarta Sans"],
+                      "headline-sm": ["Plus Jakarta Sans"],
+                      "display-lg": ["Plus Jakarta Sans"],
+                      "body-md": ["Inter"]
+              },
+              "fontSize": {
+                      "num-md": ["16px", {"lineHeight": "20px", "fontWeight": "500"}],
+                      "num-lg": ["20px", {"lineHeight": "24px", "fontWeight": "600"}],
+                      "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "headline-md": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                      "headline-sm": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+      </script>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-hidden h-screen flex">
+<!-- Predicted SideNavBar -->
+<aside class="hidden lg:flex flex-col h-full w-64 p-gutter gap-stack-md bg-surface-container-low border-r border-outline-variant">
+<!-- Header -->
+<div class="flex flex-col gap-1 mb-4">
+<h1 class="font-headline-sm text-headline-sm font-black text-primary">Warkop POS</h1>
+<div class="flex items-center gap-2 mt-4 p-2 bg-surface rounded-lg">
+<div class="w-10 h-10 rounded-full bg-primary-fixed overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional portrait of a Indonesian barista with a friendly smile, wearing a leather apron and a clean white shirt. The background is a blurred, warm-toned modern coffee shop with wooden textures and soft morning light. The aesthetic is high-quality photography with a natural, warm color palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDDQceGVcKqRrjQH6sIXkiNxdC4dPqHUbrL60Wx7DloJdMhRP-Bbh2w_EwZXlBAsWzsqYbbQ78NnnRbEUFpBn0yIkjoRLaZ76vxgYWBMX7M0qvIypZ536aekJvCpZeNg0BfCv7pdKpjtmL1RdPAIyCFkJFJImHXMKPsK0Z2whMxsP3sXTg63EMQ39drcwatch8nRTWiQ8s77XPTYrJPsNs8xSsjhhSBMpO3Rs4AcWqQYETWU5-j-DYT"/>
+</div>
+<div class="overflow-hidden">
+<p class="font-label-caps text-label-caps truncate">Barista Station 01</p>
+<p class="text-xs text-on-surface-variant truncate">Shift: Morning (Active)</p>
+</div>
+</div>
+</div>
+<!-- Navigation -->
+<nav class="flex-1 flex flex-col gap-2">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-all duration-200 ease-in-out rounded-lg font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined">point_of_sale</span>
+                Quick Order
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-all duration-200 ease-in-out rounded-lg font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined">restaurant</span>
+                Kitchen Display
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-all duration-200 ease-in-out rounded-lg font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+                Shift Control
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-all duration-200 ease-in-out rounded-lg font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+                Inventory
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 bg-primary-container text-on-primary-container rounded-lg font-bold font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">monitoring</span>
+                Reports
+            </a>
+</nav>
+<!-- CTA -->
+<button class="w-full h-touch-ideal bg-primary text-on-primary font-bold rounded-xl flex items-center justify-center gap-2 shadow-sm hover:opacity-90 transition-all">
+<span class="material-symbols-outlined">point_of_sale</span>
+            Open Drawer
+        </button>
+<!-- Footer -->
+<div class="flex flex-col gap-1 border-t border-outline-variant pt-4">
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined">settings</span>
+                Settings
+            </a>
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined">help</span>
+                Support
+            </a>
+</div>
+</aside>
+<!-- Main Content Wrapper -->
+<main class="flex-1 flex flex-col overflow-hidden">
+<!-- Predicted TopNavBar (Integrated search) -->
+<header class="flex justify-between items-center w-full px-margin-desktop h-touch-ideal sticky top-0 z-50 bg-surface border-b border-outline-variant shadow-sm">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container border border-outline-variant rounded-full text-body-md focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="Search customer name or phone..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4 ml-gutter">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">wifi</span>
+<span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+<span class="material-symbols-outlined text-on-surface-variant">dark_mode</span>
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">account_circle</span>
+</div>
+</div>
+</header>
+<!-- Content Layout: Two Column Split -->
+<div class="flex-1 flex overflow-hidden">
+<!-- Customer List (2/5 width) -->
+<section class="w-2/5 border-r border-outline-variant flex flex-col bg-surface-container-lowest">
+<div class="p-gutter border-b border-outline-variant flex justify-between items-center bg-surface">
+<h2 class="font-headline-sm text-headline-sm text-primary">Customer Ledger</h2>
+<span class="bg-primary-container text-on-primary-container px-3 py-1 rounded-full font-label-caps text-label-caps">24 Regulars</span>
+</div>
+<div class="flex-1 overflow-y-auto custom-scrollbar p-gutter space-y-3">
+<!-- Customer Card Active -->
+<div class="p-4 rounded-xl border-2 border-primary bg-primary-container/5 cursor-pointer transition-all hover:shadow-md">
+<div class="flex justify-between items-start mb-2">
+<div>
+<p class="font-bold font-body-lg text-on-surface">Budi Darmawan</p>
+<p class="text-body-sm text-on-surface-variant">0812-3456-7890</p>
+</div>
+<span class="text-error font-num-md text-num-md">Rp 450.000</span>
+</div>
+<div class="flex justify-between items-center mt-4">
+<p class="text-[10px] uppercase font-bold text-outline">Last Visit: Today, 08:45</p>
+<span class="material-symbols-outlined text-primary">chevron_right</span>
+</div>
+</div>
+<!-- Customer Card Regular -->
+<div class="p-4 rounded-xl border border-outline-variant bg-surface cursor-pointer transition-all hover:bg-surface-container-low">
+<div class="flex justify-between items-start mb-2">
+<div>
+<p class="font-bold font-body-lg text-on-surface">Siti Aminah</p>
+<p class="text-body-sm text-on-surface-variant">0819-8765-4321</p>
+</div>
+<span class="text-on-surface font-num-md text-num-md">Rp 0</span>
+</div>
+<div class="flex justify-between items-center mt-4">
+<p class="text-[10px] uppercase font-bold text-outline">Last Visit: 2 days ago</p>
+<span class="material-symbols-outlined text-outline-variant">chevron_right</span>
+</div>
+</div>
+<!-- Customer Card Debt -->
+<div class="p-4 rounded-xl border border-outline-variant bg-surface cursor-pointer transition-all hover:bg-surface-container-low">
+<div class="flex justify-between items-start mb-2">
+<div>
+<p class="font-bold font-body-lg text-on-surface">Andi Wijaya</p>
+<p class="text-body-sm text-on-surface-variant">0877-1122-3344</p>
+</div>
+<span class="text-error font-num-md text-num-md">Rp 890.500</span>
+</div>
+<div class="flex justify-between items-center mt-4">
+<p class="text-[10px] uppercase font-bold text-outline">Last Visit: Yesterday, 19:20</p>
+<span class="material-symbols-outlined text-outline-variant">chevron_right</span>
+</div>
+</div>
+<!-- Customer Card Warning -->
+<div class="p-4 rounded-xl border-l-4 border-l-error border border-outline-variant bg-error-container/10 cursor-pointer transition-all hover:bg-error-container/20">
+<div class="flex justify-between items-start mb-2">
+<div>
+<p class="font-bold font-body-lg text-on-surface">Hendra Kusuma</p>
+<p class="text-body-sm text-on-surface-variant">0813-0000-9999</p>
+</div>
+<span class="text-error font-num-md text-num-md">Rp 1.250.000</span>
+</div>
+<div class="flex justify-between items-center mt-4">
+<p class="text-[10px] uppercase font-bold text-error">CRITICAL LIMIT EXCEEDED</p>
+<span class="material-symbols-outlined text-error">priority_high</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Customer Detail (3/5 width) -->
+<section class="flex-1 flex flex-col bg-surface overflow-y-auto custom-scrollbar">
+<!-- Profile Header -->
+<div class="p-margin-desktop space-y-stack-lg">
+<div class="flex items-center gap-6">
+<div class="w-24 h-24 rounded-2xl bg-surface-container-high border border-outline-variant p-1 shadow-sm">
+<img class="w-full h-full object-cover rounded-xl" data-alt="Close-up shot of a friendly-looking customer with short dark hair, wearing a casual polo shirt. High-end lifestyle photography, soft natural studio lighting from the side. Professional UI-focused avatar design, sharp focus on the face with a warm cream-colored background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBGtF56japkPrPXjpCMt94MWVb4YEY1GPVPe5pyqa8TrYZAkCUAvPJ7Xq1TCgRtDgJEP8saLgZlvtkkC7p313H1788OQ9iC7qNSbiuDT3Qp8Q8fNnOtxmnqiNpCWz3s2n-Tb1J9oLxc8is5YwyIE6Dt2dwwbAjCrbZWnMz3Hmk20QVWK4hPHu7EPobjPT8fvTH9Y-HUSNsonqt3yxzYAH8DIueBliMHtB9uTQlrClOsbjZ1rd-N6WQz"/>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Budi Darmawan</h3>
+<p class="text-body-lg text-on-surface-variant">Regular Member since Oct 2023</p>
+</div>
+<div class="flex gap-2">
+<button class="w-10 h-10 flex items-center justify-center border border-outline-variant rounded-lg text-primary hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined">edit</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center border border-outline-variant rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</div>
+<div class="flex gap-stack-lg mt-4">
+<div class="flex items-center gap-2 text-body-md text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">call</span>
+                                    0812-3456-7890
+                                </div>
+<div class="flex items-center gap-2 text-body-md text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">location_on</span>
+                                    Jl. Melati No. 45, Jakarta
+                                </div>
+</div>
+</div>
+</div>
+<!-- Credit Limit Bar -->
+<div class="p-6 rounded-2xl bg-surface-container border border-outline-variant shadow-sm">
+<div class="flex justify-between items-end mb-3">
+<div>
+<p class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-1">Kasbon Utilization</p>
+<h4 class="font-num-lg text-num-lg text-on-surface">Rp 450.000 <span class="text-body-md text-outline font-normal">/ Rp 1.000.000</span></h4>
+</div>
+<p class="font-bold text-primary font-num-md text-num-md">45% Used</p>
+</div>
+<div class="w-full h-3 bg-outline-variant rounded-full overflow-hidden">
+<div class="h-full bg-primary-container w-[45%] rounded-full shadow-[0_0_8px_rgba(139,107,61,0.4)]"></div>
+</div>
+<div class="flex justify-between mt-3">
+<span class="text-xs text-on-surface-variant">Last increased: 3 months ago</span>
+<a class="text-xs font-bold text-primary hover:underline" href="#">Request Limit Increase</a>
+</div>
+</div>
+<!-- Transaction Actions -->
+<div class="grid grid-cols-2 gap-4">
+<button class="h-touch-ideal bg-primary text-on-primary font-bold rounded-xl flex items-center justify-center gap-3 shadow-lg hover:brightness-110 active:scale-95 transition-all">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">payments</span>
+                            Pelunasan Kasbon
+                        </button>
+<button class="h-touch-ideal border-2 border-primary text-primary font-bold rounded-xl flex items-center justify-center gap-3 hover:bg-primary/5 active:scale-95 transition-all">
+<span class="material-symbols-outlined">send</span>
+                            Kirim Pengingat (WA)
+                        </button>
+</div>
+<!-- History Table -->
+<div class="space-y-4 pt-4">
+<div class="flex justify-between items-center">
+<h5 class="font-headline-sm text-headline-sm text-on-surface">Transaction History</h5>
+<button class="text-primary font-bold flex items-center gap-1 hover:underline">
+                                View All
+                                <span class="material-symbols-outlined text-[18px]">open_in_new</span>
+</button>
+</div>
+<div class="overflow-hidden border border-outline-variant rounded-xl">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-low border-b border-outline-variant">
+<tr>
+<th class="px-4 py-3 font-label-caps text-label-caps text-on-surface-variant">Order ID</th>
+<th class="px-4 py-3 font-label-caps text-label-caps text-on-surface-variant">Date</th>
+<th class="px-4 py-3 font-label-caps text-label-caps text-on-surface-variant text-right">Amount</th>
+<th class="px-4 py-3 font-label-caps text-label-caps text-on-surface-variant">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="px-4 py-4 font-num-md text-num-md text-primary">#TRX-8829</td>
+<td class="px-4 py-4 text-body-sm text-on-surface-variant">Today, 08:45 AM</td>
+<td class="px-4 py-4 font-num-md text-num-md text-right text-on-surface">Rp 120.000</td>
+<td class="px-4 py-4">
+<span class="px-2 py-1 bg-error/10 text-error rounded-md text-[10px] font-black uppercase">Unpaid</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="px-4 py-4 font-num-md text-num-md text-primary">#TRX-8711</td>
+<td class="px-4 py-4 text-body-sm text-on-surface-variant">Yesterday, 07:20 PM</td>
+<td class="px-4 py-4 font-num-md text-num-md text-right text-on-surface">Rp 330.000</td>
+<td class="px-4 py-4">
+<span class="px-2 py-1 bg-error/10 text-error rounded-md text-[10px] font-black uppercase">Unpaid</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="px-4 py-4 font-num-md text-num-md text-primary">#TRX-8605</td>
+<td class="px-4 py-4 text-body-sm text-on-surface-variant">Oct 24, 2023</td>
+<td class="px-4 py-4 font-num-md text-num-md text-right text-on-surface">Rp 45.000</td>
+<td class="px-4 py-4">
+<span class="px-2 py-1 bg-secondary-container text-on-secondary-container rounded-md text-[10px] font-black uppercase">Paid</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="px-4 py-4 font-num-md text-num-md text-primary">#TRX-8550</td>
+<td class="px-4 py-4 text-body-sm text-on-surface-variant">Oct 22, 2023</td>
+<td class="px-4 py-4 font-num-md text-num-md text-right text-on-surface">Rp 210.000</td>
+<td class="px-4 py-4">
+<span class="px-2 py-1 bg-secondary-container text-on-secondary-container rounded-md text-[10px] font-black uppercase">Paid</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Global Floating Action (Bottom Right) -->
+<button class="fixed bottom-margin-desktop right-margin-desktop w-16 h-16 bg-primary text-on-primary rounded-full shadow-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-transform z-[60]">
+<span class="material-symbols-outlined text-[32px]">person_add</span>
+</button>
+<script>
+        // Micro-interaction for customer cards
+        document.querySelectorAll('section.w-2/5 .cursor-pointer').forEach(card => {
+            card.addEventListener('click', () => {
+                // Remove active class from all
+                document.querySelectorAll('section.w-2/5 .cursor-pointer').forEach(c => {
+                    c.classList.remove('border-primary', 'bg-primary-container/5', 'border-2');
+                    c.classList.add('border', 'border-outline-variant', 'bg-surface');
+                });
+                // Add active class to clicked
+                card.classList.add('border-primary', 'bg-primary-container/5', 'border-2');
+                card.classList.remove('border', 'border-outline-variant', 'bg-surface');
+                
+                // Trigger subtle pulse animation on main detail view
+                const detailView = document.querySelector('section.flex-1');
+                detailView.style.opacity = '0';
+                setTimeout(() => {
+                    detailView.style.opacity = '1';
+                    detailView.style.transition = 'opacity 0.3s ease';
+                }, 50);
+            });
+        });
+
+        // Search bar focus effect
+        const searchInput = document.querySelector('input[type="text"]');
+        searchInput.addEventListener('focus', () => {
+            searchInput.parentElement.classList.add('ring-2', 'ring-primary/20');
+        });
+        searchInput.addEventListener('blur', () => {
+            searchInput.parentElement.classList.remove('ring-2', 'ring-primary/20');
+        });
+    </script>
+</body></html>

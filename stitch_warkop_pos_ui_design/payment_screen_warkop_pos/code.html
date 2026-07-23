@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Warkop POS - Payment Terminal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Inter:wght@400;500;700&family=JetBrains+Mono:wght@500;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Plus+Jakarta+Sans:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-fixed": "#1d1b19",
+                    "tertiary": "#5a5854",
+                    "primary-fixed-dim": "#e8c08b",
+                    "on-primary-fixed": "#291800",
+                    "on-secondary": "#ffffff",
+                    "inverse-on-surface": "#ffeede",
+                    "on-primary-container": "#fff4ea",
+                    "error": "#ba1a1a",
+                    "background": "#fff8f4",
+                    "tertiary-fixed-dim": "#cac6c1",
+                    "tertiary-fixed": "#e6e2dd",
+                    "surface-dim": "#eed6bd",
+                    "on-surface": "#25190a",
+                    "on-surface-variant": "#4e453b",
+                    "on-primary": "#ffffff",
+                    "outline-variant": "#d2c4b6",
+                    "surface-tint": "#77592d",
+                    "on-tertiary": "#ffffff",
+                    "surface-container-high": "#fde4cb",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-container": "#faf5f0",
+                    "secondary-container": "#fadc9b",
+                    "surface-variant": "#f7dfc5",
+                    "on-secondary-container": "#76602b",
+                    "secondary": "#715c27",
+                    "surface-container": "#ffebd6",
+                    "on-secondary-fixed": "#251a00",
+                    "on-error-container": "#93000a",
+                    "primary": "#705327",
+                    "outline": "#807569",
+                    "on-tertiary-fixed-variant": "#484643",
+                    "surface-bright": "#fff8f4",
+                    "inverse-primary": "#e8c08b",
+                    "on-background": "#25190a",
+                    "surface-container-low": "#fff1e5",
+                    "surface": "#fff8f4",
+                    "inverse-surface": "#3c2e1d",
+                    "secondary-fixed-dim": "#e0c384",
+                    "surface-container-highest": "#f7dfc5",
+                    "on-secondary-fixed-variant": "#584411",
+                    "surface-container-lowest": "#ffffff",
+                    "on-error": "#ffffff",
+                    "primary-container": "#8b6b3d",
+                    "primary-fixed": "#ffddb2",
+                    "tertiary-container": "#73706c",
+                    "on-primary-fixed-variant": "#5d4218",
+                    "secondary-fixed": "#fddf9e"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "touch-min": "48px",
+                    "gutter": "16px",
+                    "stack-sm": "8px",
+                    "margin-mobile": "16px",
+                    "touch-ideal": "56px",
+                    "margin-desktop": "32px",
+                    "stack-md": "16px",
+                    "stack-lg": "24px"
+            },
+            "fontFamily": {
+                    "headline-sm": ["Plus Jakarta Sans"],
+                    "body-md": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "display-lg": ["Plus Jakarta Sans"],
+                    "label-caps": ["Inter"],
+                    "num-lg": ["JetBrains Mono"],
+                    "headline-md": ["Plus Jakarta Sans"],
+                    "num-md": ["JetBrains Mono"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-sm": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "num-lg": ["20px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "headline-md": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                    "num-md": ["16px", {"lineHeight": "20px", "fontWeight": "500"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #F5F0EB;
+            color: #25190a;
+            -webkit-font-smoothing: antialiased;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .num-pad-btn {
+            height: 72px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .active-payment {
+            border: 2px solid #705327;
+            background-color: #fff4ea;
+        }
+        .glass-overlay {
+            background: rgba(37, 25, 10, 0.4);
+            backdrop-filter: blur(4px);
+        }
+    </style>
+</head>
+<body class="font-body-md text-body-md overflow-hidden">
+<!-- POS Background (Dimmed) -->
+<div class="fixed inset-0 grid grid-cols-12 h-full">
+<!-- Sidebar Navigation -->
+<aside class="col-span-1 border-r border-outline-variant bg-surface flex flex-col items-center py-6 gap-8">
+<div class="w-12 h-12 bg-primary rounded-lg flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined">coffee</span>
+</div>
+<nav class="flex flex-col gap-6">
+<div class="p-3 bg-primary-container text-on-primary-container rounded-xl shadow-sm">
+<span class="material-symbols-outlined">point_of_sale</span>
+</div>
+<div class="p-3 text-on-surface-variant">
+<span class="material-symbols-outlined">restaurant</span>
+</div>
+<div class="p-3 text-on-surface-variant">
+<span class="material-symbols-outlined">inventory_2</span>
+</div>
+<div class="p-3 text-on-surface-variant">
+<span class="material-symbols-outlined">monitoring</span>
+</div>
+</nav>
+</aside>
+<!-- Main Content (Mockup for context) -->
+<main class="col-span-11 bg-surface-container-low p-6 grid grid-cols-3 gap-6 opacity-40">
+<div class="col-span-2 grid grid-cols-4 gap-4">
+<!-- Mockup Grid -->
+<div class="bg-white p-4 rounded-xl border border-outline-variant shadow-sm h-48"></div>
+<div class="bg-white p-4 rounded-xl border border-outline-variant shadow-sm h-48"></div>
+<div class="bg-white p-4 rounded-xl border border-outline-variant shadow-sm h-48"></div>
+<div class="bg-white p-4 rounded-xl border border-outline-variant shadow-sm h-48"></div>
+<div class="bg-white p-4 rounded-xl border border-outline-variant shadow-sm h-48"></div>
+<div class="bg-white p-4 rounded-xl border border-outline-variant shadow-sm h-48"></div>
+<div class="bg-white p-4 rounded-xl border border-outline-variant shadow-sm h-48"></div>
+<div class="bg-white p-4 rounded-xl border border-outline-variant shadow-sm h-48"></div>
+</div>
+<div class="col-span-1 bg-white rounded-xl border border-outline-variant shadow-sm flex flex-col h-full p-4">
+<div class="h-10 w-full bg-surface-container rounded mb-4"></div>
+<div class="flex-1 space-y-3">
+<div class="h-12 w-full bg-surface-container-low rounded"></div>
+<div class="h-12 w-full bg-surface-container-low rounded"></div>
+<div class="h-12 w-full bg-surface-container-low rounded"></div>
+</div>
+</div>
+</main>
+</div>
+<!-- Modal Overlay -->
+<div class="fixed inset-0 glass-overlay z-50 flex items-center justify-center p-6">
+<!-- Main Modal Container -->
+<div class="bg-surface w-full max-w-5xl h-[85vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-outline-variant">
+<!-- Modal Header -->
+<div class="px-8 py-5 border-b border-outline-variant flex justify-between items-center bg-surface-container-lowest">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Pilih Pembayaran</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Meja 04 • Order #WK-20240502</p>
+</div>
+<div class="flex items-center gap-4">
+<div class="text-right">
+<p class="font-label-caps text-label-caps text-on-surface-variant uppercase">Total Tagihan</p>
+<p class="font-num-lg text-num-lg text-primary">Rp 46.620</p>
+</div>
+<button class="w-touch-ideal h-touch-ideal flex items-center justify-center text-on-surface-variant hover:bg-surface-variant rounded-full transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+</div>
+<!-- Modal Content Body -->
+<div class="flex-1 flex min-h-0">
+<!-- Left Column: Payment Methods -->
+<div class="w-1/3 border-r border-outline-variant bg-surface-container-low p-6 flex flex-col gap-3">
+<label class="font-label-caps text-label-caps text-on-surface-variant px-1 mb-1">METODE PEMBAYARAN</label>
+<button class="active-payment flex items-center gap-4 px-5 py-4 rounded-xl text-left transition-all">
+<span class="material-symbols-outlined text-primary">payments</span>
+<span class="font-body-lg text-body-lg font-bold text-on-surface">Tunai</span>
+</button>
+<button class="bg-white border border-outline-variant hover:border-primary flex items-center gap-4 px-5 py-4 rounded-xl text-left transition-all">
+<span class="material-symbols-outlined text-on-surface-variant">qr_code_2</span>
+<span class="font-body-lg text-body-lg text-on-surface-variant">QRIS Dynamic</span>
+</button>
+<button class="bg-white border border-outline-variant hover:border-primary flex items-center gap-4 px-5 py-4 rounded-xl text-left transition-all">
+<span class="material-symbols-outlined text-on-surface-variant">qr_code</span>
+<span class="font-body-lg text-body-lg text-on-surface-variant">QRIS Static</span>
+</button>
+<button class="bg-white border border-outline-variant hover:border-primary flex items-center gap-4 px-5 py-4 rounded-xl text-left transition-all">
+<span class="material-symbols-outlined text-on-surface-variant">account_balance_wallet</span>
+<span class="font-body-lg text-body-lg text-on-surface-variant">E-Wallet</span>
+</button>
+<button class="bg-white border border-outline-variant hover:border-primary flex items-center gap-4 px-5 py-4 rounded-xl text-left transition-all">
+<span class="material-symbols-outlined text-on-surface-variant">call_split</span>
+<span class="font-body-lg text-body-lg text-on-surface-variant">Split Bill</span>
+</button>
+<button class="bg-white border border-outline-variant hover:border-primary flex items-center gap-4 px-5 py-4 rounded-xl text-left transition-all mt-auto">
+<span class="material-symbols-outlined text-error">assignment_late</span>
+<span class="font-body-lg text-body-lg text-on-surface-variant">Hutang</span>
+</button>
+</div>
+<!-- Right Column: Calculator & Summary -->
+<div class="flex-1 flex flex-col p-8 gap-8 overflow-y-auto">
+<!-- Display Area -->
+<div class="grid grid-cols-2 gap-6">
+<div class="bg-surface-container-highest p-5 rounded-xl border border-outline-variant">
+<p class="font-label-caps text-label-caps text-on-surface-variant mb-2">DITERIMA</p>
+<div class="flex items-baseline gap-2">
+<span class="text-on-surface-variant font-headline-sm">Rp</span>
+<input class="bg-transparent border-none p-0 focus:ring-0 font-num-lg text-num-lg text-on-surface w-full" readonly="" type="text" value="50.000"/>
+</div>
+</div>
+<div class="bg-on-primary-container p-5 rounded-xl border border-primary-container">
+<p class="font-label-caps text-label-caps text-primary-fixed mb-2">KEMBALIAN</p>
+<div class="flex items-baseline gap-2">
+<span class="text-primary-fixed font-headline-sm">Rp</span>
+<span class="font-num-lg text-num-lg text-white">3.380</span>
+</div>
+</div>
+</div>
+<div class="flex gap-6">
+<!-- Numpad -->
+<div class="flex-1 grid grid-cols-3 gap-3">
+<button class="num-pad-btn bg-white border border-outline-variant rounded-lg hover:bg-surface-variant active:scale-95 transition-all">1</button>
+<button class="num-pad-btn bg-white border border-outline-variant rounded-lg hover:bg-surface-variant active:scale-95 transition-all">2</button>
+<button class="num-pad-btn bg-white border border-outline-variant rounded-lg hover:bg-surface-variant active:scale-95 transition-all">3</button>
+<button class="num-pad-btn bg-white border border-outline-variant rounded-lg hover:bg-surface-variant active:scale-95 transition-all">4</button>
+<button class="num-pad-btn bg-white border border-outline-variant rounded-lg hover:bg-surface-variant active:scale-95 transition-all">5</button>
+<button class="num-pad-btn bg-white border border-outline-variant rounded-lg hover:bg-surface-variant active:scale-95 transition-all">6</button>
+<button class="num-pad-btn bg-white border border-outline-variant rounded-lg hover:bg-surface-variant active:scale-95 transition-all">7</button>
+<button class="num-pad-btn bg-white border border-outline-variant rounded-lg hover:bg-surface-variant active:scale-95 transition-all">8</button>
+<button class="num-pad-btn bg-white border border-outline-variant rounded-lg hover:bg-surface-variant active:scale-95 transition-all">9</button>
+<button class="num-pad-btn bg-white border border-outline-variant rounded-lg hover:bg-surface-variant active:scale-95 transition-all">C</button>
+<button class="num-pad-btn bg-white border border-outline-variant rounded-lg hover:bg-surface-variant active:scale-95 transition-all">0</button>
+<button class="num-pad-btn bg-white border border-outline-variant rounded-lg hover:bg-surface-variant active:scale-95 transition-all">
+<span class="material-symbols-outlined text-2xl">backspace</span>
+</button>
+</div>
+<!-- Quick Cash Buttons -->
+<div class="w-40 flex flex-col gap-3">
+<label class="font-label-caps text-label-caps text-on-surface-variant mb-1">TUNAI CEPAT</label>
+<button class="flex-1 py-2 px-4 rounded-lg border border-outline-variant bg-secondary-fixed text-on-secondary-fixed font-num-md hover:brightness-95 transition-all shadow-sm">100k</button>
+<button class="flex-1 py-2 px-4 rounded-lg border border-outline-variant bg-surface-variant text-on-secondary-fixed-variant font-num-md hover:brightness-95 transition-all shadow-sm">50k</button>
+<button class="flex-1 py-2 px-4 rounded-lg border border-outline-variant bg-surface-container-high text-on-surface-variant font-num-md hover:brightness-95 transition-all shadow-sm">20k</button>
+<button class="flex-1 py-2 px-4 rounded-lg border border-outline-variant bg-surface-container-low text-on-surface-variant font-num-md hover:brightness-95 transition-all shadow-sm">10k</button>
+<button class="flex-1 py-2 px-4 rounded-lg border border-outline-variant bg-surface-container-low text-on-surface-variant font-num-md hover:brightness-95 transition-all shadow-sm">5k</button>
+<button class="flex-1 py-2 px-4 rounded-lg border-2 border-primary text-primary font-bold hover:bg-primary-container hover:text-white transition-all shadow-sm uppercase tracking-wider">Uang Pas</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Modal Footer Actions -->
+<div class="px-8 py-6 border-t border-outline-variant bg-surface-container-lowest flex gap-4">
+<button class="px-10 py-4 font-label-caps text-label-caps border border-outline text-on-surface-variant hover:bg-surface-variant rounded-lg transition-all uppercase tracking-widest">
+                    KEMBALI
+                </button>
+<button class="flex-1 h-touch-ideal bg-primary text-white font-headline-sm rounded-xl flex items-center justify-center gap-3 shadow-lg hover:bg-primary-container active:scale-[0.98] transition-all">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">print</span>
+<span>BAYAR & PRINT</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Micro-interaction Script -->
+<script>
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('mousedown', () => {
+                btn.style.transform = 'scale(0.96)';
+            });
+            btn.addEventListener('mouseup', () => {
+                btn.style.transform = '';
+            });
+            btn.addEventListener('mouseleave', () => {
+                btn.style.transform = '';
+            });
+        });
+
+        // Simple Payment Method Selector Mock Logic
+        const pButtons = document.querySelectorAll('.w-1\\/3 button');
+        pButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                pButtons.forEach(b => {
+                    b.classList.remove('active-payment');
+                    const icon = b.querySelector('.material-symbols-outlined');
+                    const text = b.querySelector('span:not(.material-symbols-outlined)');
+                    if (icon) icon.classList.remove('text-primary');
+                    if (icon) icon.classList.add('text-on-surface-variant');
+                    if (text) text.classList.remove('font-bold', 'text-on-surface');
+                    if (text) text.classList.add('text-on-surface-variant');
+                });
+                btn.classList.add('active-payment');
+                const activeIcon = btn.querySelector('.material-symbols-outlined');
+                const activeText = btn.querySelector('span:not(.material-symbols-outlined)');
+                if (activeIcon) activeIcon.classList.remove('text-on-surface-variant');
+                if (activeIcon) activeIcon.classList.add('text-primary');
+                if (activeText) activeText.classList.remove('text-on-surface-variant');
+                if (activeText) activeText.classList.add('font-bold', 'text-on-surface');
+            });
+        });
+    </script>
+</body></html>

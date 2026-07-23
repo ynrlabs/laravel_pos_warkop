@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Warkop POS - Inventory Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Plus+Jakarta+Sans:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "outline": "#807569",
+                    "on-secondary": "#ffffff",
+                    "outline-variant": "#d2c4b6",
+                    "primary-container": "#8b6b3d",
+                    "on-secondary-fixed-variant": "#584411",
+                    "primary-fixed-dim": "#e8c08b",
+                    "background": "#fff8f4",
+                    "tertiary-container": "#73706c",
+                    "on-tertiary-fixed": "#1d1b19",
+                    "inverse-primary": "#e8c08b",
+                    "on-tertiary": "#ffffff",
+                    "on-tertiary-container": "#faf5f0",
+                    "inverse-surface": "#3c2e1d",
+                    "inverse-on-surface": "#ffeede",
+                    "on-tertiary-fixed-variant": "#484643",
+                    "secondary-fixed": "#fddf9e",
+                    "on-surface-variant": "#4e453b",
+                    "tertiary": "#5a5854",
+                    "on-secondary-fixed": "#251a00",
+                    "tertiary-fixed": "#e6e2dd",
+                    "secondary-container": "#fadc9b",
+                    "on-primary-container": "#fff4ea",
+                    "on-primary": "#ffffff",
+                    "surface-variant": "#f7dfc5",
+                    "surface-container-high": "#fde4cb",
+                    "surface-container-lowest": "#ffffff",
+                    "surface": "#fff8f4",
+                    "on-primary-fixed-variant": "#5d4218",
+                    "surface-container-highest": "#f7dfc5",
+                    "secondary": "#715c27",
+                    "surface-tint": "#77592d",
+                    "on-primary-fixed": "#291800",
+                    "surface-bright": "#fff8f4",
+                    "on-error": "#ffffff",
+                    "on-surface": "#25190a",
+                    "secondary-fixed-dim": "#e0c384",
+                    "primary-fixed": "#ffddb2",
+                    "surface-dim": "#eed6bd",
+                    "on-secondary-container": "#76602b",
+                    "error-container": "#ffdad6",
+                    "error": "#ba1a1a",
+                    "surface-container-low": "#fff1e5",
+                    "tertiary-fixed-dim": "#cac6c1",
+                    "primary": "#705327",
+                    "on-error-container": "#93000a",
+                    "surface-container": "#ffebd6",
+                    "on-background": "#25190a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-sm": "8px",
+                    "margin-desktop": "32px",
+                    "touch-ideal": "56px",
+                    "margin-mobile": "16px",
+                    "touch-min": "48px",
+                    "stack-md": "16px",
+                    "stack-lg": "24px",
+                    "gutter": "16px"
+            },
+            "fontFamily": {
+                    "num-md": ["JetBrains Mono"],
+                    "num-lg": ["JetBrains Mono"],
+                    "label-caps": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "headline-md": ["Plus Jakarta Sans"],
+                    "headline-sm": ["Plus Jakarta Sans"],
+                    "display-lg": ["Plus Jakarta Sans"],
+                    "body-md": ["Inter"]
+            },
+            "fontSize": {
+                    "num-md": ["16px", {"lineHeight": "20px", "fontWeight": "500"}],
+                    "num-lg": ["20px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-md": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                    "headline-sm": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      body {
+        background-color: #fff8f4;
+        color: #25190a;
+      }
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #d2c4b6;
+        border-radius: 10px;
+      }
+      .tab-active {
+        color: #705327;
+        border-bottom: 2px solid #705327;
+        font-weight: 700;
+      }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden font-body-md text-body-md">
+<!-- SideNavBar (from JSON) -->
+<aside class="hidden lg:flex flex-col h-full p-gutter gap-stack-md bg-surface-container-low border-r border-outline-variant w-64 shrink-0 transition-all duration-200 ease-in-out">
+<div class="flex items-center gap-3 py-4">
+<div class="bg-primary text-on-primary w-10 h-10 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined">inventory_2</span>
+</div>
+<div>
+<h1 class="font-headline-sm text-[18px] font-black text-primary leading-tight">Warkop POS</h1>
+<p class="text-[12px] text-on-surface-variant font-label-caps uppercase tracking-wider">Inventory Hub</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<!-- Quick Order -->
+<a class="flex items-center gap-3 px-3 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">point_of_sale</span>
+<span class="font-label-caps text-label-caps">Quick Order</span>
+</a>
+<!-- Kitchen Display -->
+<a class="flex items-center gap-3 px-3 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">restaurant</span>
+<span class="font-label-caps text-label-caps">Kitchen Display</span>
+</a>
+<!-- Shift Control -->
+<a class="flex items-center gap-3 px-3 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span class="font-label-caps text-label-caps">Shift Control</span>
+</a>
+<!-- Inventory (ACTIVE) -->
+<a class="flex items-center gap-3 px-3 py-3 bg-primary-container text-on-primary-container rounded-lg font-bold transition-all" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-label-caps text-label-caps">Inventory</span>
+</a>
+<!-- Reports -->
+<a class="flex items-center gap-3 px-3 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">monitoring</span>
+<span class="font-label-caps text-label-caps">Reports</span>
+</a>
+</nav>
+<div class="pt-4 border-t border-outline-variant space-y-1">
+<div class="flex items-center gap-3 px-3 py-3 mb-2">
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center border border-outline-variant overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A portrait of a professional Indonesian barista wearing a clean brown apron, smiling warmly in a modern high-contrast coffee shop setting with warm golden lighting and wood textures." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDi271d0XlvxjuwmUxLGqnrxdP6g_zKeMmchqH-7mm5mr6Rp-o0-FBkGNfODzUYOD5p9O1S_b7XUtljlNfHEpqRTwY-nJBwP6luCSS-GV742MDzk70AJPWCzVBd_u0_L2Cb_4blUN_nWDwGi7BLlVNSp_MsKFo3cZRm1sQVsD5p2XO3GM9q-kP8J7d0KDqyye2PrxZbicJIavt-3bzeJwfpydUHvgawT9RtwGhxT6AxyisIUX62qMnF"/>
+</div>
+<div class="flex-1 min-w-0">
+<p class="font-bold text-on-surface truncate">Barista Station 01</p>
+<p class="text-xs text-on-surface-variant truncate">Shift: Morning (Active)</p>
+</div>
+</div>
+<button class="w-full py-3 px-4 bg-primary text-on-primary rounded-lg font-bold text-sm flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[20px]">account_balance_wallet</span>
+                Open Drawer
+            </button>
+<a class="flex items-center gap-3 px-3 py-2 mt-4 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-caps text-label-caps text-xs">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-label-caps text-label-caps text-xs">Support</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col min-w-0 bg-background overflow-hidden relative">
+<!-- TopNavBar (from JSON) -->
+<header class="flex justify-between items-center w-full px-margin-desktop h-touch-ideal sticky top-0 z-50 bg-surface border-b border-outline-variant shadow-sm">
+<div class="flex items-center gap-8">
+<h2 class="font-headline-md text-headline-sm font-bold text-primary">Inventory Management</h2>
+<div class="hidden md:flex gap-6 items-center h-full pt-1">
+<a class="text-on-surface-variant pb-2 font-label-caps text-xs hover:text-primary transition-colors" href="#">DASHBOARD</a>
+<a class="text-primary border-b-2 border-primary font-bold pb-2 font-label-caps text-xs" href="#">WASTE & OPNAME</a>
+<a class="text-on-surface-variant pb-2 font-label-caps text-xs hover:text-primary transition-colors" href="#">SUPPLIERS</a>
+<a class="text-on-surface-variant pb-2 font-label-caps text-xs hover:text-primary transition-colors" href="#">PURCHASE ORDERS</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+<input class="bg-surface-container-lowest border border-outline-variant rounded-full py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none w-64" placeholder="Search items..." type="text"/>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-on-surface-variant hover:bg-surface-variant rounded-full transition-colors"><span class="material-symbols-outlined">wifi</span></button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-variant rounded-full transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-variant rounded-full transition-colors"><span class="material-symbols-outlined">dark_mode</span></button>
+</div>
+</div>
+</header>
+<!-- Content Canvas -->
+<div class="flex-1 overflow-y-auto custom-scrollbar p-margin-desktop space-y-stack-lg">
+<!-- Tab Switcher -->
+<div class="bg-surface border border-outline-variant rounded-xl p-1 flex gap-1 w-fit">
+<button class="px-6 py-2 rounded-lg font-bold text-sm transition-all bg-primary text-on-primary shadow-md" id="btn-waste" onclick="switchTab('waste')">
+                    Waste Log
+                </button>
+<button class="px-6 py-2 rounded-lg font-bold text-sm transition-all text-on-surface-variant hover:bg-surface-variant" id="btn-opname" onclick="switchTab('opname')">
+                    Fast Opname
+                </button>
+</div>
+<!-- Waste Log View -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-stack-lg animate-in fade-in duration-500" id="view-waste">
+<!-- Log Form -->
+<div class="lg:col-span-5 space-y-stack-md">
+<div class="bg-surface p-6 rounded-xl border border-outline-variant shadow-sm">
+<div class="flex items-center gap-3 mb-6">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">delete_sweep</span>
+<h3 class="font-headline-sm text-lg font-bold">New Wastage Log</h3>
+</div>
+<form class="space-y-4">
+<div class="space-y-1">
+<label class="text-xs font-bold font-label-caps text-on-surface-variant">INGREDIENT</label>
+<select class="w-full bg-surface-container-lowest border-outline-variant rounded-lg p-3 text-body-md focus:ring-primary focus:border-primary">
+<option>Susu UHT Full Cream (1L)</option>
+<option>Biji Kopi Arabica (1kg)</option>
+<option>Gula Aren Cair (5L)</option>
+<option>Syrup Caramel (750ml)</option>
+<option>Indomie Goreng Original</option>
+</select>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-1">
+<label class="text-xs font-bold font-label-caps text-on-surface-variant">QUANTITY</label>
+<input class="w-full bg-surface-container-lowest border-outline-variant rounded-lg p-3 text-body-md focus:ring-primary focus:border-primary" placeholder="0" type="number"/>
+</div>
+<div class="space-y-1">
+<label class="text-xs font-bold font-label-caps text-on-surface-variant">UNIT</label>
+<select class="w-full bg-surface-container-lowest border-outline-variant rounded-lg p-3 text-body-md focus:ring-primary focus:border-primary">
+<option>Liters</option>
+<option>Grams</option>
+<option>Pcs</option>
+<option>Boxes</option>
+</select>
+</div>
+</div>
+<div class="space-y-1">
+<label class="text-xs font-bold font-label-caps text-on-surface-variant">REASON</label>
+<div class="grid grid-cols-2 gap-2">
+<label class="flex items-center gap-2 p-3 border border-outline-variant rounded-lg cursor-pointer hover:bg-surface-container-low transition-colors">
+<input class="text-primary focus:ring-primary" name="reason" type="radio"/>
+<span class="text-sm">Expired</span>
+</label>
+<label class="flex items-center gap-2 p-3 border border-outline-variant rounded-lg cursor-pointer hover:bg-surface-container-low transition-colors">
+<input class="text-primary focus:ring-primary" name="reason" type="radio"/>
+<span class="text-sm">Spilled</span>
+</label>
+<label class="flex items-center gap-2 p-3 border border-outline-variant rounded-lg cursor-pointer hover:bg-surface-container-low transition-colors">
+<input class="text-primary focus:ring-primary" name="reason" type="radio"/>
+<span class="text-sm">Wrong Order</span>
+</label>
+<label class="flex items-center gap-2 p-3 border border-outline-variant rounded-lg cursor-pointer hover:bg-surface-container-low transition-colors">
+<input class="text-primary focus:ring-primary" name="reason" type="radio"/>
+<span class="text-sm">Quality Issue</span>
+</label>
+</div>
+</div>
+<div class="space-y-1">
+<label class="text-xs font-bold font-label-caps text-on-surface-variant">RECORDED BY</label>
+<input class="w-full bg-surface-container-low border-outline-variant rounded-lg p-3 text-body-md text-on-surface-variant italic" disabled="" type="text" value="Staff: Budi"/>
+</div>
+<button class="w-full bg-primary text-on-primary h-touch-ideal rounded-lg font-bold text-lg shadow-lg hover:shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-3 mt-4" type="button">
+<span class="material-symbols-outlined">save</span>
+                                Log Wastage
+                            </button>
+</form>
+</div>
+</div>
+<!-- History Table -->
+<div class="lg:col-span-7 space-y-stack-md">
+<div class="bg-surface rounded-xl border border-outline-variant shadow-sm overflow-hidden flex flex-col h-full">
+<div class="p-6 border-b border-outline-variant flex justify-between items-center bg-surface-container-lowest">
+<h3 class="font-headline-sm text-lg font-bold">Recent Wastage History</h3>
+<button class="text-primary font-bold text-xs font-label-caps hover:underline">VIEW ALL REPORTS</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-surface-container-low text-xs font-bold font-label-caps text-on-surface-variant border-b border-outline-variant">
+<tr>
+<th class="px-6 py-4">DATE & TIME</th>
+<th class="px-6 py-4">ITEM</th>
+<th class="px-6 py-4">QTY</th>
+<th class="px-6 py-4">REASON</th>
+<th class="px-6 py-4">STAFF</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-6 py-4 text-xs font-num-md">Today, 10:45</td>
+<td class="px-6 py-4 font-bold text-on-surface">Susu UHT</td>
+<td class="px-6 py-4 text-error">2.0 L</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 bg-error-container text-on-error-container text-[10px] font-bold rounded-full uppercase">Expired</span>
+</td>
+<td class="px-6 py-4 text-sm">Budi</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-6 py-4 text-xs font-num-md">Today, 08:30</td>
+<td class="px-6 py-4 font-bold text-on-surface">Syrup Caramel</td>
+<td class="px-6 py-4 text-error">0.5 L</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 bg-surface-variant text-on-surface-variant text-[10px] font-bold rounded-full uppercase">Spilled</span>
+</td>
+<td class="px-6 py-4 text-sm">Siti</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-6 py-4 text-xs font-num-md">Yesterday, 21:15</td>
+<td class="px-6 py-4 font-bold text-on-surface">Biji Kopi</td>
+<td class="px-6 py-4 text-error">0.2 kg</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 bg-surface-variant text-on-surface-variant text-[10px] font-bold rounded-full uppercase">Wrong Order</span>
+</td>
+<td class="px-6 py-4 text-sm">Agus</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<!-- Fast Opname View (Hidden by default) -->
+<div class="hidden grid-cols-1 lg:grid-cols-12 gap-stack-lg animate-in slide-in-from-right-10 duration-500" id="view-opname">
+<div class="lg:col-span-12">
+<div class="bg-surface p-6 rounded-xl border border-outline-variant shadow-sm space-y-6">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 bg-secondary-container text-on-secondary-container rounded-xl flex items-center justify-center">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">qr_code_scanner</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-xl font-bold">Fast Daily Stock Opname</h3>
+<p class="text-sm text-on-surface-variant">Update actual stock for high-turnover items.</p>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="px-4 py-2 border border-outline-variant text-on-surface-variant rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-surface-container-low">
+<span class="material-symbols-outlined text-[18px]">print</span> Print Sheet
+                                </button>
+<button class="px-6 py-2 bg-primary text-on-primary rounded-lg font-bold text-sm flex items-center gap-2 shadow-md hover:opacity-90">
+<span class="material-symbols-outlined text-[18px]">done_all</span> Submit All
+                                </button>
+</div>
+</div>
+<!-- Checklist Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-gutter">
+<!-- Biji Kopi Card -->
+<div class="bg-surface-container-lowest p-5 border border-outline-variant rounded-xl space-y-4 hover:border-primary transition-colors group">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-[10px] font-bold font-label-caps text-on-surface-variant">ID: INV-001</p>
+<h4 class="font-bold text-lg">Biji Kopi Arabica</h4>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors">coffee</span>
+</div>
+<div class="flex items-center justify-between text-sm py-2 px-3 bg-surface-container-low rounded-lg">
+<span class="text-on-surface-variant">System Stock:</span>
+<span class="font-num-md text-primary font-bold">12.5 kg</span>
+</div>
+<div class="space-y-1">
+<label class="text-[10px] font-bold font-label-caps text-on-surface-variant">ACTUAL STOCK (KG)</label>
+<input class="w-full bg-surface border-outline-variant rounded-lg p-3 text-lg font-num-lg focus:ring-primary focus:border-primary" oninput="calculateDiff(this, 12.5)" placeholder="Enter qty" type="number"/>
+</div>
+<div class="diff-indicator h-8 flex items-center justify-center rounded-lg bg-surface-container-low text-xs font-bold font-label-caps">
+                                    -- NO DATA --
+                                </div>
+</div>
+<!-- Susu Card -->
+<div class="bg-surface-container-lowest p-5 border border-outline-variant rounded-xl space-y-4 hover:border-primary transition-colors group">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-[10px] font-bold font-label-caps text-on-surface-variant">ID: INV-042</p>
+<h4 class="font-bold text-lg">Susu UHT 1L</h4>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors">water_drop</span>
+</div>
+<div class="flex items-center justify-between text-sm py-2 px-3 bg-surface-container-low rounded-lg">
+<span class="text-on-surface-variant">System Stock:</span>
+<span class="font-num-md text-primary font-bold">48 pcs</span>
+</div>
+<div class="space-y-1">
+<label class="text-[10px] font-bold font-label-caps text-on-surface-variant">ACTUAL STOCK (PCS)</label>
+<input class="w-full bg-surface border-outline-variant rounded-lg p-3 text-lg font-num-lg focus:ring-primary focus:border-primary" oninput="calculateDiff(this, 48)" placeholder="Enter qty" type="number"/>
+</div>
+<div class="diff-indicator h-8 flex items-center justify-center rounded-lg bg-surface-container-low text-xs font-bold font-label-caps">
+                                    -- NO DATA --
+                                </div>
+</div>
+<!-- Indomie Card -->
+<div class="bg-surface-container-lowest p-5 border border-outline-variant rounded-xl space-y-4 hover:border-primary transition-colors group">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-[10px] font-bold font-label-caps text-on-surface-variant">ID: INV-109</p>
+<h4 class="font-bold text-lg">Indomie Goreng</h4>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors">restaurant_menu</span>
+</div>
+<div class="flex items-center justify-between text-sm py-2 px-3 bg-surface-container-low rounded-lg">
+<span class="text-on-surface-variant">System Stock:</span>
+<span class="font-num-md text-primary font-bold">120 pcs</span>
+</div>
+<div class="space-y-1">
+<label class="text-[10px] font-bold font-label-caps text-on-surface-variant">ACTUAL STOCK (PCS)</label>
+<input class="w-full bg-surface border-outline-variant rounded-lg p-3 text-lg font-num-lg focus:ring-primary focus:border-primary" oninput="calculateDiff(this, 120)" placeholder="Enter qty" type="number"/>
+</div>
+<div class="diff-indicator h-8 flex items-center justify-center rounded-lg bg-surface-container-low text-xs font-bold font-label-caps">
+                                    -- NO DATA --
+                                </div>
+</div>
+<!-- Gula Card -->
+<div class="bg-surface-container-lowest p-5 border border-outline-variant rounded-xl space-y-4 hover:border-primary transition-colors group">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-[10px] font-bold font-label-caps text-on-surface-variant">ID: INV-015</p>
+<h4 class="font-bold text-lg">Gula Pasir (1kg)</h4>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors">grain</span>
+</div>
+<div class="flex items-center justify-between text-sm py-2 px-3 bg-surface-container-low rounded-lg">
+<span class="text-on-surface-variant">System Stock:</span>
+<span class="font-num-md text-primary font-bold">15.0 kg</span>
+</div>
+<div class="space-y-1">
+<label class="text-[10px] font-bold font-label-caps text-on-surface-variant">ACTUAL STOCK (KG)</label>
+<input class="w-full bg-surface border-outline-variant rounded-lg p-3 text-lg font-num-lg focus:ring-primary focus:border-primary" oninput="calculateDiff(this, 15)" placeholder="Enter qty" type="number"/>
+</div>
+<div class="diff-indicator h-8 flex items-center justify-center rounded-lg bg-surface-container-low text-xs font-bold font-label-caps">
+                                    -- NO DATA --
+                                </div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Generic Stats/Insight Footer (Always Visible) -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-stack-md pt-stack-lg border-t border-outline-variant">
+<div class="bg-surface p-4 rounded-xl border border-outline-variant flex items-center gap-4">
+<div class="w-10 h-10 bg-error-container text-on-error-container rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined">trending_down</span>
+</div>
+<div>
+<p class="text-xs font-label-caps font-bold text-on-surface-variant">WASTE THIS MONTH</p>
+<p class="text-xl font-num-lg text-error">Rp 1,240,500</p>
+</div>
+</div>
+<div class="bg-surface p-4 rounded-xl border border-outline-variant flex items-center gap-4">
+<div class="w-10 h-10 bg-secondary-container text-on-secondary-container rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined">verified</span>
+</div>
+<div>
+<p class="text-xs font-label-caps font-bold text-on-surface-variant">STOCK ACCURACY</p>
+<p class="text-xl font-num-lg text-secondary">96.2%</p>
+</div>
+</div>
+<div class="bg-surface p-4 rounded-xl border border-outline-variant flex items-center gap-4">
+<div class="w-10 h-10 bg-primary-container text-on-primary-container rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined">update</span>
+</div>
+<div>
+<p class="text-xs font-label-caps font-bold text-on-surface-variant">LAST OPNAME</p>
+<p class="text-lg font-bold text-on-surface">2 Hours Ago</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Scripts for Interaction -->
+<script>
+        function switchTab(view) {
+            const wasteView = document.getElementById('view-waste');
+            const opnameView = document.getElementById('view-opname');
+            const wasteBtn = document.getElementById('btn-waste');
+            const opnameBtn = document.getElementById('btn-opname');
+
+            if (view === 'waste') {
+                wasteView.classList.remove('hidden');
+                wasteView.classList.add('grid');
+                opnameView.classList.add('hidden');
+                opnameView.classList.remove('grid');
+
+                wasteBtn.classList.add('bg-primary', 'text-on-primary', 'shadow-md');
+                wasteBtn.classList.remove('text-on-surface-variant', 'hover:bg-surface-variant');
+                
+                opnameBtn.classList.remove('bg-primary', 'text-on-primary', 'shadow-md');
+                opnameBtn.classList.add('text-on-surface-variant', 'hover:bg-surface-variant');
+            } else {
+                opnameView.classList.remove('hidden');
+                opnameView.classList.add('grid');
+                wasteView.classList.add('hidden');
+                wasteView.classList.remove('grid');
+
+                opnameBtn.classList.add('bg-primary', 'text-on-primary', 'shadow-md');
+                opnameBtn.classList.remove('text-on-surface-variant', 'hover:bg-surface-variant');
+                
+                wasteBtn.classList.remove('bg-primary', 'text-on-primary', 'shadow-md');
+                wasteBtn.classList.add('text-on-surface-variant', 'hover:bg-surface-variant');
+            }
+        }
+
+        function calculateDiff(input, systemStock) {
+            const actual = parseFloat(input.value);
+            const container = input.closest('div').nextElementSibling;
+            
+            if (isNaN(actual)) {
+                container.innerHTML = '-- NO DATA --';
+                container.className = 'diff-indicator h-8 flex items-center justify-center rounded-lg bg-surface-container-low text-xs font-bold font-label-caps text-on-surface-variant';
+                return;
+            }
+
+            const diff = actual - systemStock;
+            if (diff === 0) {
+                container.innerHTML = 'MATCHING (0)';
+                container.className = 'diff-indicator h-8 flex items-center justify-center rounded-lg bg-secondary-container text-on-secondary-container text-xs font-bold font-label-caps';
+            } else if (diff > 0) {
+                container.innerHTML = `SURPLUS (+${diff.toFixed(1)})`;
+                container.className = 'diff-indicator h-8 flex items-center justify-center rounded-lg bg-surface-variant text-on-surface text-xs font-bold font-label-caps';
+            } else {
+                container.innerHTML = `SELISIH (${diff.toFixed(1)})`;
+                container.className = 'diff-indicator h-8 flex items-center justify-center rounded-lg bg-error-container text-on-error-container text-xs font-bold font-label-caps';
+            }
+        }
+    </script>
+</body></html>

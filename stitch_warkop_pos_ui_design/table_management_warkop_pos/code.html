@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Warkop POS - Table Map</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .filled-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+        .table-canvas {
+            background-image: radial-gradient(#d2c4b6 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+        .glass-panel {
+            background: rgba(255, 248, 244, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline": "#807569",
+                        "on-secondary": "#ffffff",
+                        "outline-variant": "#d2c4b6",
+                        "primary-container": "#8b6b3d",
+                        "on-secondary-fixed-variant": "#584411",
+                        "primary-fixed-dim": "#e8c08b",
+                        "background": "#fff8f4",
+                        "tertiary-container": "#73706c",
+                        "on-tertiary-fixed": "#1d1b19",
+                        "inverse-primary": "#e8c08b",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-container": "#faf5f0",
+                        "inverse-surface": "#3c2e1d",
+                        "inverse-on-surface": "#ffeede",
+                        "on-tertiary-fixed-variant": "#484643",
+                        "secondary-fixed": "#fddf9e",
+                        "on-surface-variant": "#4e453b",
+                        "tertiary": "#5a5854",
+                        "on-secondary-fixed": "#251a00",
+                        "tertiary-fixed": "#e6e2dd",
+                        "secondary-container": "#fadc9b",
+                        "on-primary-container": "#fff4ea",
+                        "on-primary": "#ffffff",
+                        "surface-variant": "#f7dfc5",
+                        "surface-container-high": "#fde4cb",
+                        "surface-container-lowest": "#ffffff",
+                        "surface": "#fff8f4",
+                        "on-primary-fixed-variant": "#5d4218",
+                        "surface-container-highest": "#f7dfc5",
+                        "secondary": "#715c27",
+                        "surface-tint": "#77592d",
+                        "on-primary-fixed": "#291800",
+                        "surface-bright": "#fff8f4",
+                        "on-error": "#ffffff",
+                        "on-surface": "#25190a",
+                        "secondary-fixed-dim": "#e0c384",
+                        "primary-fixed": "#ffddb2",
+                        "surface-dim": "#eed6bd",
+                        "on-secondary-container": "#76602b",
+                        "error-container": "#ffdad6",
+                        "error": "#ba1a1a",
+                        "surface-container-low": "#fff1e5",
+                        "tertiary-fixed-dim": "#cac6c1",
+                        "primary": "#705327",
+                        "on-error-container": "#93000a",
+                        "surface-container": "#ffebd6",
+                        "on-background": "#25190a",
+                        "success-container": "#d7f3d8",
+                        "on-success-container": "#143315",
+                        "warning-container": "#fdf19e",
+                        "on-warning-container": "#3a3200"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-sm": "8px",
+                        "margin-desktop": "32px",
+                        "touch-ideal": "56px",
+                        "margin-mobile": "16px",
+                        "touch-min": "48px",
+                        "stack-md": "16px",
+                        "stack-lg": "24px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "num-md": ["JetBrains Mono"],
+                        "num-lg": ["JetBrains Mono"],
+                        "label-caps": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "headline-sm": ["Plus Jakarta Sans"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "num-md": ["16px", {"lineHeight": "20px", "fontWeight": "500"}],
+                        "num-lg": ["20px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "headline-md": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                        "headline-sm": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-md selection:bg-primary-container selection:text-on-primary-container h-screen flex flex-col overflow-hidden">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center w-full px-margin-desktop h-touch-ideal sticky top-0 z-50 bg-surface border-b border-outline-variant shadow-sm">
+<div class="flex items-center gap-gutter">
+<span class="font-headline-md text-headline-md font-bold text-primary">Warkop POS</span>
+<div class="hidden md:flex gap-stack-lg ml-margin-desktop h-full items-center">
+<a class="text-primary border-b-2 border-primary font-bold pb-2 transition-colors font-label-caps text-label-caps" href="#">POS</a>
+<a class="text-on-surface-variant pb-2 hover:text-primary transition-colors font-label-caps text-label-caps" href="#">KDS</a>
+<a class="text-on-surface-variant pb-2 hover:text-primary transition-colors font-label-caps text-label-caps" href="#">Analytics</a>
+<a class="text-on-surface-variant pb-2 hover:text-primary transition-colors font-label-caps text-label-caps" href="#">Inventory</a>
+<a class="text-on-surface-variant pb-2 hover:text-primary transition-colors font-label-caps text-label-caps" href="#">Shifts</a>
+</div>
+</div>
+<div class="flex items-center gap-stack-md">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container border border-outline-variant rounded-full text-body-sm font-body-sm focus:ring-2 focus:ring-primary focus:outline-none w-64" placeholder="Search tables..." type="text"/>
+</div>
+<button class="w-touch-min h-touch-min flex items-center justify-center hover:bg-surface-variant rounded-full transition-all">
+<span class="material-symbols-outlined text-primary">wifi</span>
+</button>
+<button class="w-touch-min h-touch-min flex items-center justify-center hover:bg-surface-variant rounded-full transition-all relative">
+<span class="material-symbols-outlined text-primary">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="w-touch-min h-touch-min flex items-center justify-center hover:bg-surface-variant rounded-full transition-all">
+<span class="material-symbols-outlined text-primary">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Stats Sub-header -->
+<div class="w-full px-margin-desktop py-4 bg-surface-container-low border-b border-outline-variant flex items-center justify-between">
+<div class="flex items-center gap-stack-lg">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-success-container border border-outline-variant"></span>
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant">Meja Tersedia: <span class="text-on-surface font-bold">12</span></span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-error-container border border-outline-variant"></span>
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant">Terisi: <span class="text-on-surface font-bold">8</span></span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-warning-container border border-outline-variant"></span>
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant">Kuning (Bill Printed): <span class="text-on-surface font-bold">2</span></span>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<span class="font-body-sm text-body-sm text-on-surface-variant italic">Shift: Morning (Barista Station 01)</span>
+<button class="flex items-center gap-2 bg-primary text-on-primary px-4 py-2 rounded-lg font-bold hover:opacity-90 transition-all text-body-sm">
+<span class="material-symbols-outlined text-[18px]">account_balance_wallet</span>
+                Open Drawer
+            </button>
+</div>
+</div>
+<!-- Main Content Area -->
+<main class="flex-1 flex overflow-hidden relative">
+<!-- Interactive Grid Map -->
+<div class="flex-1 overflow-auto table-canvas p-10 relative">
+<div class="max-w-6xl mx-auto grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-stack-lg">
+<!-- Row 1 -->
+<div class="h-28 rounded-lg bg-success-container border-2 border-outline-variant flex flex-col items-center justify-center cursor-pointer hover:shadow-lg transition-all active:scale-95 group" onclick="toggleTableDetails('Meja 1')">
+<span class="font-headline-sm text-headline-sm text-on-success-container">1</span>
+<span class="font-label-caps text-[10px] text-on-success-container/70">AVAILABLE</span>
+</div>
+<div class="h-28 rounded-lg bg-error-container border-2 border-outline-variant flex flex-col items-center justify-center cursor-pointer hover:shadow-lg transition-all active:scale-95 relative overflow-hidden" onclick="toggleTableDetails('Meja 2')">
+<span class="font-headline-sm text-headline-sm text-on-error-container">2</span>
+<span class="font-num-md text-[10px] bg-error text-white px-2 py-0.5 rounded-full absolute top-2 right-2">A012</span>
+<span class="font-label-caps text-[10px] text-on-error-container/70">OCCUPIED</span>
+</div>
+<div class="h-28 rounded-lg bg-success-container border-2 border-outline-variant flex flex-col items-center justify-center cursor-pointer hover:shadow-lg transition-all active:scale-95">
+<span class="font-headline-sm text-headline-sm text-on-success-container">3</span>
+<span class="font-label-caps text-[10px] text-on-success-container/70">AVAILABLE</span>
+</div>
+<div class="h-28 rounded-lg bg-success-container border-2 border-outline-variant flex flex-col items-center justify-center cursor-pointer hover:shadow-lg transition-all active:scale-95">
+<span class="font-headline-sm text-headline-sm text-on-success-container">4</span>
+<span class="font-label-caps text-[10px] text-on-success-container/70">AVAILABLE</span>
+</div>
+<!-- Spacer for layout asymmetry -->
+<div class="col-span-1"></div>
+<!-- Circular Tables -->
+<div class="h-28 w-28 rounded-full bg-error-container border-2 border-outline-variant flex flex-col items-center justify-center cursor-pointer hover:shadow-lg transition-all active:scale-95">
+<span class="font-headline-sm text-headline-sm text-on-error-container">5</span>
+<span class="font-label-caps text-[10px] text-on-error-container/70">OCCUPIED</span>
+</div>
+<div class="h-28 w-28 rounded-full bg-success-container border-2 border-outline-variant flex flex-col items-center justify-center cursor-pointer hover:shadow-lg transition-all active:scale-95">
+<span class="font-headline-sm text-headline-sm text-on-success-container">6</span>
+<span class="font-label-caps text-[10px] text-on-success-container/70">AVAILABLE</span>
+</div>
+<div class="h-28 w-28 rounded-full bg-success-container border-2 border-outline-variant flex flex-col items-center justify-center cursor-pointer hover:shadow-lg transition-all active:scale-95">
+<span class="font-headline-sm text-headline-sm text-on-success-container">7</span>
+<span class="font-label-caps text-[10px] text-on-success-container/70">AVAILABLE</span>
+</div>
+<!-- Row 2 -->
+<div class="h-28 rounded-lg bg-warning-container border-2 border-outline-variant flex flex-col items-center justify-center cursor-pointer hover:shadow-lg transition-all active:scale-95 relative">
+<span class="font-headline-sm text-headline-sm text-on-warning-container">8</span>
+<span class="font-label-caps text-[10px] text-on-warning-container/70">BILL PRINTED</span>
+<div class="absolute -top-1 -right-1">
+<span class="material-symbols-outlined text-primary bg-white rounded-full p-0.5 text-[16px] shadow-sm">print</span>
+</div>
+</div>
+<div class="col-span-2 h-28 rounded-xl bg-error-container border-2 border-outline-variant flex flex-col items-center justify-center cursor-pointer hover:shadow-lg transition-all active:scale-95">
+<span class="font-headline-sm text-headline-sm text-on-error-container">VIP 1</span>
+<span class="font-label-caps text-[10px] text-on-error-container/70 text-center">LARGE GROUP<br/>OCCUPIED</span>
+</div>
+<div class="h-28 rounded-lg bg-success-container border-2 border-outline-variant flex flex-col items-center justify-center cursor-pointer hover:shadow-lg transition-all active:scale-95">
+<span class="font-headline-sm text-headline-sm text-on-success-container">9</span>
+<span class="font-label-caps text-[10px] text-on-success-container/70">AVAILABLE</span>
+</div>
+<div class="h-28 rounded-lg bg-error-container border-2 border-outline-variant flex flex-col items-center justify-center cursor-pointer hover:shadow-lg transition-all active:scale-95">
+<span class="font-headline-sm text-headline-sm text-on-error-container">10</span>
+</div>
+<div class="h-28 rounded-lg bg-success-container border-2 border-outline-variant flex flex-col items-center justify-center cursor-pointer hover:shadow-lg transition-all active:scale-95">
+<span class="font-headline-sm text-headline-sm text-on-success-container">11</span>
+</div>
+<div class="h-28 rounded-lg bg-success-container border-2 border-outline-variant flex flex-col items-center justify-center cursor-pointer hover:shadow-lg transition-all active:scale-95">
+<span class="font-headline-sm text-headline-sm text-on-success-container">12</span>
+</div>
+<div class="h-28 rounded-lg bg-error-container border-2 border-outline-variant flex flex-col items-center justify-center cursor-pointer hover:shadow-lg transition-all active:scale-95">
+<span class="font-headline-sm text-headline-sm text-on-error-container">13</span>
+</div>
+<!-- Row 3 - Outdoor Section -->
+<div class="col-span-8 border-t-2 border-dashed border-outline-variant mt-8 pt-8 flex items-center justify-center">
+<span class="bg-surface px-4 py-1 font-label-caps text-label-caps text-on-surface-variant">Outdoor Area</span>
+</div>
+<div class="h-24 w-24 rounded-full border-2 border-outline bg-surface-container flex items-center justify-center cursor-pointer hover:bg-surface-variant transition-all">
+<span class="font-headline-sm text-headline-sm opacity-30">O1</span>
+</div>
+<div class="h-24 w-24 rounded-full border-2 border-outline bg-surface-container flex items-center justify-center cursor-pointer hover:bg-surface-variant transition-all">
+<span class="font-headline-sm text-headline-sm opacity-30">O2</span>
+</div>
+<div class="h-24 w-24 rounded-full border-2 border-outline bg-surface-container flex items-center justify-center cursor-pointer hover:bg-surface-variant transition-all">
+<span class="font-headline-sm text-headline-sm opacity-30">O3</span>
+</div>
+<div class="h-24 w-24 rounded-full border-2 border-outline bg-surface-container flex items-center justify-center cursor-pointer hover:bg-surface-variant transition-all">
+<span class="font-headline-sm text-headline-sm opacity-30">O4</span>
+</div>
+<div class="h-24 w-24 rounded-full border-2 border-outline bg-surface-container flex items-center justify-center cursor-pointer hover:bg-surface-variant transition-all">
+<span class="font-headline-sm text-headline-sm opacity-30">O5</span>
+</div>
+<div class="h-24 w-24 rounded-full border-2 border-outline bg-surface-container flex items-center justify-center cursor-pointer hover:bg-surface-variant transition-all">
+<span class="font-headline-sm text-headline-sm opacity-30">O6</span>
+</div>
+<div class="h-24 w-24 rounded-full border-2 border-outline bg-surface-container flex items-center justify-center cursor-pointer hover:bg-surface-variant transition-all">
+<span class="font-headline-sm text-headline-sm opacity-30">O7</span>
+</div>
+<div class="h-24 w-24 rounded-full border-2 border-outline bg-surface-container flex items-center justify-center cursor-pointer hover:bg-surface-variant transition-all">
+<span class="font-headline-sm text-headline-sm opacity-30">O8</span>
+</div>
+</div>
+</div>
+<!-- Right Side Management Panel (Collapsible/Contextual) -->
+<aside class="w-80 glass-panel border-l border-outline-variant flex flex-col shadow-xl transform transition-transform duration-300 translate-x-full" id="actionPanel">
+<div class="p-gutter border-b border-outline-variant flex justify-between items-center">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-primary" id="panelTitle">Meja 2</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Status: <span class="text-error font-bold">Occupied</span></p>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant" onclick="closeActionPanel()">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="flex-1 overflow-auto p-gutter space-y-stack-lg">
+<!-- Current Order Summary -->
+<div class="p-4 bg-white rounded-xl border border-outline-variant">
+<div class="flex justify-between items-start mb-4">
+<span class="font-num-md text-num-md">Order ID: A012</span>
+<span class="font-num-md text-num-md text-primary font-bold">Rp 154,000</span>
+</div>
+<div class="space-y-2 border-t border-dashed border-outline-variant pt-3">
+<div class="flex justify-between text-body-sm">
+<span>2x Kopi Susu Aren</span>
+<span>44,000</span>
+</div>
+<div class="flex justify-between text-body-sm">
+<span>1x Nasi Goreng Gila</span>
+<span>35,000</span>
+</div>
+<div class="flex justify-between text-body-sm">
+<span>1x Cireng Bumbu Rujak</span>
+<span>25,000</span>
+</div>
+</div>
+</div>
+<!-- Quick Actions -->
+<div class="space-y-stack-md">
+<button class="w-full flex items-center justify-between p-4 bg-primary text-on-primary rounded-xl font-bold hover:scale-[0.98] transition-all">
+<span>Pay Bill</span>
+<span class="material-symbols-outlined">payments</span>
+</button>
+<button class="w-full flex items-center justify-between p-4 border border-primary text-primary rounded-xl font-bold hover:bg-primary-container hover:text-on-primary-container transition-all">
+<span>Move Table</span>
+<span class="material-symbols-outlined">move_item</span>
+</button>
+<button class="w-full flex items-center justify-between p-4 border border-primary text-primary rounded-xl font-bold hover:bg-primary-container hover:text-on-primary-container transition-all">
+<span>Merge Table</span>
+<span class="material-symbols-outlined">merge</span>
+</button>
+<button class="w-full flex items-center justify-between p-4 border border-primary text-primary rounded-xl font-bold hover:bg-primary-container hover:text-on-primary-container transition-all">
+<span>Split Bill</span>
+<span class="material-symbols-outlined">call_split</span>
+</button>
+</div>
+</div>
+<div class="p-gutter border-t border-outline-variant bg-surface-container-low">
+<button class="w-full h-12 bg-outline text-white rounded-lg font-bold flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">print</span>
+                    Print Receipt
+                </button>
+</div>
+</aside>
+<!-- Floating Quick Action Trigger for Mobile (FAB) -->
+<button class="lg:hidden fixed bottom-24 right-6 w-14 h-14 bg-primary text-on-primary rounded-full shadow-2xl flex items-center justify-center z-50 active:scale-90 transition-all">
+<span class="material-symbols-outlined">add</span>
+</button>
+</main>
+<!-- Bottom Bar Filters -->
+<footer class="w-full h-16 bg-surface border-t border-outline-variant px-margin-desktop flex items-center justify-between z-40">
+<div class="flex items-center gap-4 bg-surface-container-low p-1 rounded-full border border-outline-variant">
+<button class="px-6 py-2 bg-primary text-on-primary rounded-full font-bold text-body-sm transition-all">Lantai 1</button>
+<button class="px-6 py-2 hover:bg-surface-variant rounded-full text-on-surface-variant font-bold text-body-sm transition-all">Outdoor</button>
+<button class="px-6 py-2 hover:bg-surface-variant rounded-full text-on-surface-variant font-bold text-body-sm transition-all">VIP</button>
+</div>
+<div class="flex items-center gap-stack-lg">
+<div class="flex items-center gap-4 border-r border-outline-variant pr-gutter">
+<button class="flex items-center gap-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">zoom_in</span>
+<span class="font-label-caps text-label-caps">Zoom</span>
+</button>
+</div>
+<button class="flex items-center gap-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">grid_view</span>
+<span class="font-label-caps text-label-caps">Grid Mode</span>
+</button>
+</div>
+</footer>
+<script>
+        const actionPanel = document.getElementById('actionPanel');
+        const panelTitle = document.getElementById('panelTitle');
+
+        function toggleTableDetails(tableName) {
+            panelTitle.innerText = tableName;
+            actionPanel.classList.remove('translate-x-full');
+            // Mock dynamic state changes
+            if (tableName === 'Meja 1') {
+                document.querySelector('#actionPanel .text-error').innerText = 'Available';
+                document.querySelector('#actionPanel .text-error').className = 'text-green-600 font-bold';
+            } else {
+                document.querySelector('#actionPanel .text-green-600')?.classList.add('text-error');
+                document.querySelector('#actionPanel .text-error').innerText = 'Occupied';
+            }
+        }
+
+        function closeActionPanel() {
+            actionPanel.classList.add('translate-x-full');
+        }
+
+        // Click outside to close (optional improvement)
+        document.querySelector('.table-canvas').addEventListener('click', (e) => {
+            if (e.target.classList.contains('table-canvas')) {
+                closeActionPanel();
+            }
+        });
+    </script>
+</body></html>

@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+
+<html class="light" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Warkop POS - Tutup Shift</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;family=Inter:wght@400;500;700&amp;family=JetBrains+Mono:wght@500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Config Hooked to Design System -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "on-tertiary-fixed": "#1d1b19",
+                "tertiary": "#5a5854",
+                "primary-fixed-dim": "#e8c08b",
+                "on-primary-fixed": "#291800",
+                "on-secondary": "#ffffff",
+                "inverse-on-surface": "#ffeede",
+                "on-primary-container": "#fff4ea",
+                "error": "#ba1a1a",
+                "background": "#fff8f4",
+                "tertiary-fixed-dim": "#cac6c1",
+                "tertiary-fixed": "#e6e2dd",
+                "surface-dim": "#eed6bd",
+                "on-surface": "#25190a",
+                "on-surface-variant": "#4e453b",
+                "on-primary": "#ffffff",
+                "outline-variant": "#d2c4b6",
+                "surface-tint": "#77592d",
+                "on-tertiary": "#ffffff",
+                "surface-container-high": "#fde4cb",
+                "error-container": "#ffdad6",
+                "on-tertiary-container": "#faf5f0",
+                "secondary-container": "#fadc9b",
+                "surface-variant": "#f7dfc5",
+                "on-secondary-container": "#76602b",
+                "secondary": "#715c27",
+                "surface-container": "#ffebd6",
+                "on-secondary-fixed": "#251a00",
+                "on-error-container": "#93000a",
+                "primary": "#705327",
+                "outline": "#807569",
+                "on-tertiary-fixed-variant": "#484643",
+                "surface-bright": "#fff8f4",
+                "inverse-primary": "#e8c08b",
+                "on-background": "#25190a",
+                "surface-container-low": "#fff1e5",
+                "surface": "#fff8f4",
+                "inverse-surface": "#3c2e1d",
+                "secondary-fixed-dim": "#e0c384",
+                "surface-container-highest": "#f7dfc5",
+                "on-secondary-fixed-variant": "#584411",
+                "surface-container-lowest": "#ffffff",
+                "on-error": "#ffffff",
+                "primary-container": "#8b6b3d",
+                "primary-fixed": "#ffddb2",
+                "tertiary-container": "#73706c",
+                "on-primary-fixed-variant": "#5d4218",
+                "secondary-fixed": "#fddf9e"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+            },
+            "spacing": {
+                "touch-min": "48px",
+                "gutter": "16px",
+                "stack-sm": "8px",
+                "margin-mobile": "16px",
+                "touch-ideal": "56px",
+                "margin-desktop": "32px",
+                "stack-md": "16px",
+                "stack-lg": "24px"
+            },
+            "fontFamily": {
+                "headline-sm": ["Plus Jakarta Sans"],
+                "body-md": ["Inter"],
+                "body-sm": ["Inter"],
+                "display-lg": ["Plus Jakarta Sans"],
+                "label-caps": ["Inter"],
+                "num-lg": ["JetBrains Mono"],
+                "headline-md": ["Plus Jakarta Sans"],
+                "num-md": ["JetBrains Mono"],
+                "body-lg": ["Inter"]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body {
+            background-color: #F5F0EB;
+            color: #25190a;
+            -webkit-font-smoothing: antialiased;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .filament-card {
+            background: #ffffff;
+            border: 1px solid #E5E0DA;
+            box-shadow: 0px 1px 3px rgba(47, 34, 18, 0.05);
+            border-radius: 0.75rem;
+        }
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+    </style>
+</head>
+<body class="font-body-md text-body-md overflow-x-hidden">
+<!-- TopNavBar (Shared Component) -->
+<header class="flex justify-between items-center w-full px-margin-desktop h-touch-ideal sticky top-0 z-50 bg-surface dark:bg-inverse-surface border-b border-outline-variant dark:border-outline shadow-sm dark:shadow-none">
+<div class="flex items-center gap-stack-md">
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-inverse-primary">Warkop POS</span>
+<nav class="hidden md:flex ml-8 gap-stack-lg">
+<a class="text-on-surface-variant dark:text-on-tertiary-container pb-2 hover:text-primary transition-colors font-label-caps text-label-caps" href="#">POS</a>
+<a class="text-on-surface-variant dark:text-on-tertiary-container pb-2 hover:text-primary transition-colors font-label-caps text-label-caps" href="#">KDS</a>
+<a class="text-on-surface-variant dark:text-on-tertiary-container pb-2 hover:text-primary transition-colors font-label-caps text-label-caps" href="#">Analytics</a>
+<a class="text-on-surface-variant dark:text-on-tertiary-container pb-2 hover:text-primary transition-colors font-label-caps text-label-caps" href="#">Inventory</a>
+<a class="text-primary dark:text-primary-fixed-dim border-b-2 border-primary font-bold pb-2 font-label-caps text-label-caps" href="#">Shifts</a>
+</nav>
+</div>
+<div class="flex items-center gap-gutter">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">wifi</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">notifications</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">account_circle</button>
+</div>
+</header>
+<main class="max-w-7xl mx-auto px-margin-desktop py-stack-lg flex flex-col gap-stack-lg">
+<!-- Screen Header -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-stack-md">
+<div>
+<h1 class="font-headline-sm text-headline-sm text-on-surface">Tutup Shift - Pagi</h1>
+<div class="flex flex-wrap gap-4 mt-2">
+<span class="flex items-center gap-1 text-on-surface-variant font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[18px]">person</span> Budi Santoso
+                    </span>
+<span class="flex items-center gap-1 text-on-surface-variant font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[18px]">schedule</span> 06:00 - 14:00 (Selesai)
+                    </span>
+<span class="bg-secondary-container text-on-secondary-container px-3 py-0.5 rounded-full font-label-caps text-[10px]">AKTIF</span>
+</div>
+</div>
+<div class="flex gap-stack-md">
+<button class="px-6 h-[48px] border border-outline text-primary font-bold rounded-lg hover:bg-surface-container transition-all active:scale-95">
+                    BATAL
+                </button>
+<button class="px-6 h-[48px] bg-primary text-on-primary font-bold rounded-lg shadow-sm hover:opacity-90 transition-all active:scale-95">
+                    DRAFT
+                </button>
+</div>
+</div>
+<!-- Management Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-stack-lg">
+<!-- Left Column: System Summary -->
+<div class="lg:col-span-4 flex flex-col gap-stack-lg">
+<div class="filament-card p-6 flex flex-col gap-stack-lg">
+<div class="border-b border-outline-variant pb-3">
+<h2 class="font-label-caps text-label-caps text-on-surface-variant">RINGKASAN SISTEM</h2>
+</div>
+<div class="flex flex-col gap-4">
+<div class="flex justify-between items-center">
+<span class="text-on-surface-variant font-body-md text-body-md">Modal Awal</span>
+<span class="font-num-md text-num-md">Rp 564.000</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-on-surface-variant font-body-md text-body-md">Sales (Cash)</span>
+<span class="font-num-md text-num-md text-primary">+ Rp 2.450.000</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-on-surface-variant font-body-md text-body-md">Sales (Non-Cash)</span>
+<span class="font-num-md text-num-md">+ Rp 1.200.000</span>
+</div>
+<div class="flex justify-between items-center py-4 border-t border-dashed border-outline-variant mt-2">
+<span class="font-bold text-on-surface font-body-lg text-body-lg">Estimasi Cash</span>
+<div class="text-right">
+<span class="block font-num-lg text-num-lg text-primary">Rp 3.189.000</span>
+<span class="text-[11px] text-on-surface-variant italic">(Modal + Cash Sales - Pengeluaran)</span>
+</div>
+</div>
+</div>
+</div>
+<div class="filament-card p-6 bg-surface-container-low border-none">
+<h2 class="font-label-caps text-label-caps text-on-surface-variant mb-4">CATATAN SHIFT</h2>
+<textarea class="w-full bg-white border border-outline-variant rounded-lg p-3 text-body-sm font-body-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none min-h-[120px]" placeholder="Tambahkan catatan jika ada selisih atau kejadian penting..."></textarea>
+</div>
+</div>
+<!-- Right Column: Physical Count -->
+<div class="lg:col-span-8">
+<div class="filament-card overflow-hidden">
+<div class="bg-surface-container-highest p-4 border-b border-outline-variant flex justify-between items-center">
+<h2 class="font-label-caps text-label-caps text-on-surface">PERHITUNGAN FISIK (CASH)</h2>
+<span class="font-num-md text-num-md bg-white px-3 py-1 rounded-lg border border-outline-variant">Total: <span id="total-fisik-display">Rp 0</span></span>
+</div>
+<div class="p-0 overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant">
+<th class="p-4 font-label-caps text-[11px] text-on-surface-variant">DENOMINASI</th>
+<th class="p-4 font-label-caps text-[11px] text-on-surface-variant text-center">KUANTITAS</th>
+<th class="p-4 font-label-caps text-[11px] text-on-surface-variant text-right">SUBTOTAL</th>
+</tr>
+</thead>
+<tbody id="denom-table">
+<!-- JS will populate this with the data provided -->
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<!-- Sticky Footer Comparison -->
+<div class="filament-card mt-stack-lg p-6 bg-inverse-surface text-on-primary-container shadow-xl">
+<div class="grid grid-cols-1 md:grid-cols-4 items-center gap-gutter">
+<div class="flex flex-col">
+<span class="text-label-caps font-label-caps text-outline-variant">SISTEM (EXPECTED)</span>
+<span class="text-num-lg font-num-lg">Rp 3.189.000</span>
+</div>
+<div class="flex flex-col">
+<span class="text-label-caps font-label-caps text-outline-variant">FISIK (ACTUAL)</span>
+<span class="text-num-lg font-num-lg" id="footer-fisik">Rp 0</span>
+</div>
+<div class="flex flex-col border-l border-outline/30 md:pl-6">
+<span class="text-label-caps font-label-caps text-outline-variant">SELISIH</span>
+<span class="text-num-lg font-num-lg text-error" id="selisih-val">Rp -3.189.000</span>
+<span class="text-[10px] font-bold text-error bg-error-container/20 px-2 rounded w-fit mt-1 uppercase" id="selisih-tag">KURANG</span>
+</div>
+<div class="flex justify-end gap-stack-md">
+<button class="h-touch-ideal px-8 bg-primary-container text-on-primary-container font-bold rounded-lg flex items-center gap-2 hover:opacity-90 transition-all active:scale-95">
+<span class="material-symbols-outlined">print</span>
+                        TUTUP SHIFT &amp; CETAK
+                    </button>
+</div>
+</div>
+</div>
+</main>
+<!-- SideNavBar (Hidden on desktop as per request for management view focus, but logic included for mobile) -->
+<div class="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-surface-container-lowest border-t border-outline-variant flex justify-around items-center z-50" id="mobile-nav">
+<button class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined">point_of_sale</span>
+<span class="text-[10px] font-label-caps uppercase">POS</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined">restaurant</span>
+<span class="text-[10px] font-label-caps uppercase">KDS</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined">monitoring</span>
+<span class="text-[10px] font-label-caps uppercase">REPORT</span>
+</button>
+</div>
+<script>
+        const denoms = [
+            { value: 100000, label: "Rp 100.000", type: "bill" },
+            { value: 50000, label: "Rp 50.000", type: "bill" },
+            { value: 20000, label: "Rp 20.000", type: "bill" },
+            { value: 10000, label: "Rp 10.000", type: "bill" },
+            { value: 5000, label: "Rp 5.000", type: "bill" },
+            { value: 2000, label: "Rp 2.000", type: "bill" },
+            { value: 1000, label: "Rp 1.000", type: "bill" },
+            { value: 500, label: "Rp 500", type: "coin" },
+            { value: 200, label: "Rp 200", type: "coin" },
+            { value: 100, label: "Rp 100", type: "coin" }
+        ];
+
+        const expectedCash = 3189000;
+        let counts = {};
+        denoms.forEach(d => counts[d.value] = 0);
+
+        function formatRupiah(number) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0
+            }).format(number).replace('IDR', 'Rp');
+        }
+
+        function updateUI() {
+            let totalFisik = 0;
+            denoms.forEach(d => {
+                const subtotal = d.value * counts[d.value];
+                totalFisik += subtotal;
+                document.getElementById(`subtotal-${d.value}`).innerText = formatRupiah(subtotal);
+                document.getElementById(`input-${d.value}`).value = counts[d.value];
+            });
+
+            const selisih = totalFisik - expectedCash;
+            
+            document.getElementById('total-fisik-display').innerText = formatRupiah(totalFisik);
+            document.getElementById('footer-fisik').innerText = formatRupiah(totalFisik);
+            
+            const selisihValEl = document.getElementById('selisih-val');
+            const selisihTagEl = document.getElementById('selisih-tag');
+            
+            selisihValEl.innerText = (selisih >= 0 ? '+' : '') + formatRupiah(selisih);
+            
+            if (selisih === 0) {
+                selisihValEl.className = "text-num-lg font-num-lg text-on-tertiary-container";
+                selisihTagEl.innerText = "PAS";
+                selisihTagEl.className = "text-[10px] font-bold text-on-tertiary-container bg-secondary/40 px-2 rounded w-fit mt-1 uppercase";
+            } else if (selisih > 0) {
+                selisihValEl.className = "text-num-lg font-num-lg text-green-400";
+                selisihTagEl.innerText = "LEBIH";
+                selisihTagEl.className = "text-[10px] font-bold text-green-900 bg-green-400 px-2 rounded w-fit mt-1 uppercase";
+            } else {
+                selisihValEl.className = "text-num-lg font-num-lg text-error";
+                selisihTagEl.innerText = "KURANG";
+                selisihTagEl.className = "text-[10px] font-bold text-error bg-error-container/20 px-2 rounded w-fit mt-1 uppercase";
+            }
+        }
+
+        function changeQty(denom, delta) {
+            counts[denom] = Math.max(0, counts[denom] + delta);
+            updateUI();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('denom-table');
+            tbody.innerHTML = denoms.map(d => `
+                <tr class="border-b border-outline-variant hover:bg-surface-container-low transition-colors group">
+                    <td class="p-4 align-middle">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center">
+                                <span class="material-symbols-outlined text-primary-container">
+                                    ${d.type === 'bill' ? 'payments' : 'toll'}
+                                </span>
+                            </div>
+                            <span class="font-bold text-on-surface">${d.label}</span>
+                        </div>
+                    </td>
+                    <td class="p-4 align-middle">
+                        <div class="flex items-center justify-center gap-2">
+                            <button onclick="changeQty(${d.value}, -1)" class="w-10 h-10 border border-outline-variant rounded bg-white hover:bg-surface-variant flex items-center justify-center active:scale-90 transition-all">-</button>
+                            <input 
+                                id="input-${d.value}"
+                                type="number" 
+                                value="0"
+                                class="w-20 h-10 text-center border-outline-variant rounded font-num-md focus:ring-primary focus:border-primary"
+                                onchange="counts[${d.value}] = parseInt(this.value) || 0; updateUI();"
+                            >
+                            <button onclick="changeQty(${d.value}, 1)" class="w-10 h-10 border border-outline-variant rounded bg-white hover:bg-surface-variant flex items-center justify-center active:scale-90 transition-all">+</button>
+                            <div class="flex gap-1 ml-2">
+                                <button onclick="changeQty(${d.value}, 5)" class="px-2 h-10 text-[10px] font-bold border border-outline-variant rounded bg-surface-container-high hover:bg-primary hover:text-white transition-all">+5</button>
+                                <button onclick="changeQty(${d.value}, 10)" class="px-2 h-10 text-[10px] font-bold border border-outline-variant rounded bg-surface-container-high hover:bg-primary hover:text-white transition-all">+10</button>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="p-4 align-middle text-right">
+                        <span id="subtotal-${d.value}" class="font-num-md text-num-md text-on-surface-variant">Rp 0</span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Initialize view
+        renderTable();
+        // Specific initial state as per user request to show +Rp 1.000 surplus
+        // To get 3.190.000 (which is +1.000) from 3.189.000:
+        counts[100000] = 31; // 3.100.000
+        counts[50000] = 1;   // 50.000
+        counts[20000] = 2;   // 40.000
+        // Total = 3.190.000
+        updateUI();
+
+    </script>
+</body></html>
