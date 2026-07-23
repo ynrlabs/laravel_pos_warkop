@@ -55,6 +55,15 @@ class QuickOrder extends Page
     public $transferTabId = null;
     public $transferTabNewTableId = null;
     public $transferTabNewCustomerName = '';
+
+    // Payment Gateway States
+    public $showQrisModal = false;
+    public $qrisQrString = '';
+    public $qrisQrImageUrl = '';
+    public $qrisPaymentNumber = '';
+    public $qrisAmount = 0;
+    public $qrisExpiresAt = null;
+    public $qrisErrorMessage = '';
     
     public function mount(): void
     {
@@ -307,33 +316,197 @@ class QuickOrder extends Page
             return;
         }
         
-        // Create order
-        $order = $this->createOrder();
-        
-        if ($order) {
-            // Create payment
-            $this->createPayment($order);
+        if ($this->paymentMethod === 'qris' || $this->paymentMethod === 'ewallet') {
+            // A. Gateway Payment Flow
             
-            // Print receipt
-            $this->printReceipt($order);
+            // Check if gateway is configured
+            $gateway = \App\Services\PaymentGateway\PaymentGatewayFactory::getPrimaryGateway(Auth::user()->outlet_id);
+            if (!$gateway) {
+                $this->dispatch('notify', message: 'Gateway pembayaran belum aktif/dikonfigurasi!', type: 'danger');
+                return;
+            }
+
+            // 1. Create order as pending
+            $order = $this->createOrder('pending');
+            if (!$order) {
+                return;
+            }
+
+            // 2. Create payment as pending
+            $payment = $this->createPayment($order, 'pending');
+
+            // 3. Request Gateway Transaction
+            $this->dispatch('notify', message: 'Menghubungkan ke gateway...', type: 'info');
             
-            // Send to KDS
-            $this->sendToKds($order);
+            try {
+                if ($this->paymentMethod === 'qris') {
+                    $result = $gateway->createQrisTransaction($payment);
+                } else {
+                    $result = $gateway->createEwalletTransaction($payment, 'ewallet_gopay');
+                }
+
+                if ($result['success']) {
+                    // Update payment database fields
+                    $payment->update([
+                        'qr_code_data' => $result['qr_string'] ?? null,
+                        'qr_image_path' => $result['qr_image_url'] ?? null,
+                        'provider_transaction_id' => $result['provider_transaction_id'] ?? null,
+                        'expired_at' => $result['expired_at'] ?? now()->addMinutes(15),
+                        'provider' => $this->getGatewayName($gateway),
+                    ]);
+
+                    // Set properties to open QRIS Modal
+                    $this->qrisQrString = $result['qr_string'] ?? '';
+                    $this->qrisQrImageUrl = $result['qr_image_url'] ?? '';
+                    $this->qrisPaymentNumber = $payment->payment_number;
+                    $this->qrisAmount = $payment->amount;
+                    $this->qrisExpiresAt = $result['expired_at'] instanceof \Carbon\Carbon 
+                        ? $result['expired_at'] 
+                        : \Carbon\Carbon::parse($result['expired_at']);
+                    
+                    // Close standard modal, open QRIS modal
+                    $this->showPaymentModal = false;
+                    $this->showQrisModal = true;
+                    
+                    $this->dispatch('notify', message: 'Transaksi QRIS berhasil dibuat!', type: 'success');
+                } else {
+                    $payment->update(['status' => 'failed', 'notes' => $result['error'] ?? 'API error']);
+                    $order->update(['status' => 'void']);
+                    $this->dispatch('notify', message: 'Gagal men-charge QRIS: ' . ($result['error'] ?? 'Unknown Error'), type: 'danger');
+                }
+            } catch (\Exception $e) {
+                $payment->update(['status' => 'failed', 'notes' => $e->getMessage()]);
+                $order->update(['status' => 'void']);
+                $this->dispatch('notify', message: 'Terjadi kesalahan sistem: ' . $e->getMessage(), type: 'danger');
+            }
             
-            // Clear cart
-            $this->clearCart();
-            $this->selectedTableId = null;
-            $this->tabId = null;
-            $this->customerName = '';
-            $this->orderType = 'dine_in';
+        } else {
+            // B. Manual/Cash Flow
+            $order = $this->createOrder('paid');
             
-            $this->closePaymentModal();
-            
-            $this->dispatch('notify', message: 'Pesanan berhasil diproses!', type: 'success');
+            if ($order) {
+                $this->createPayment($order, 'paid');
+                
+                $this->printReceipt($order);
+                $this->sendToKds($order);
+                
+                $this->clearCart();
+                $this->selectedTableId = null;
+                $this->tabId = null;
+                $this->customerName = '';
+                $this->orderType = 'dine_in';
+                
+                $this->closePaymentModal();
+                $this->dispatch('notify', message: 'Pesanan berhasil diproses!', type: 'success');
+            }
         }
     }
     
-    protected function createOrder(): \App\Models\Order
+    protected function getGatewayName($gateway): string
+    {
+        if ($gateway instanceof \App\Services\PaymentGateway\MidtransService) {
+            return 'midtrans';
+        }
+        if ($gateway instanceof \App\Services\PaymentGateway\XenditService) {
+            return 'xendit';
+        }
+        return 'manual';
+    }
+
+    public function checkPaymentStatus(): void
+    {
+        if (empty($this->qrisPaymentNumber) || !$this->showQrisModal) {
+            return;
+        }
+
+        $payment = \App\Models\Payment::with(['order', 'outlet'])->where('payment_number', $this->qrisPaymentNumber)->first();
+        if (!$payment) {
+            return;
+        }
+
+        // If webhook already processed it and updated status to paid
+        if ($payment->status === 'paid') {
+            $this->finalizePaidGatewayOrder($payment);
+            return;
+        }
+
+        // Check if QR code is expired
+        if ($payment->isExpired() || ($this->qrisExpiresAt && now()->gt($this->qrisExpiresAt))) {
+            $payment->update(['status' => 'expired']);
+            $payment->order->update(['status' => 'void']);
+            $this->showQrisModal = false;
+            $this->qrisPaymentNumber = '';
+            $this->dispatch('notify', message: 'Pembayaran QRIS kedaluwarsa!', type: 'warning');
+            return;
+        }
+
+        // Query the gateway API directly
+        $gateway = \App\Services\PaymentGateway\PaymentGatewayFactory::getGatewayByName($payment->outlet_id, $payment->provider);
+        if ($gateway) {
+            $result = $gateway->getTransactionStatus($this->qrisPaymentNumber);
+            if ($result['success']) {
+                // Let the service process the status update
+                $statusResult = $gateway->handleNotification($result['data']);
+                if ($statusResult['success'] && $statusResult['status'] === 'paid') {
+                    $this->finalizePaidGatewayOrder($payment);
+                }
+            }
+        }
+    }
+
+    protected function finalizePaidGatewayOrder(\App\Models\Payment $payment): void
+    {
+        $order = $payment->order;
+
+        // Update local status just in case
+        $payment->update([
+            'status' => 'paid',
+            'paid_at' => now(),
+        ]);
+        $order->update([
+            'status' => 'paid',
+            'paid_at' => now(),
+        ]);
+
+        // Deduct stock for ingredients
+        $this->deductIngredientStock($order);
+
+        // Print receipt & send to KDS
+        $this->printReceipt($order);
+        $this->sendToKds($order);
+
+        // Clear cart and states
+        $this->clearCart();
+        $this->selectedTableId = null;
+        $this->tabId = null;
+        $this->customerName = '';
+        $this->orderType = 'dine_in';
+
+        // Close QRIS modal
+        $this->showQrisModal = false;
+        $this->qrisPaymentNumber = '';
+
+        $this->dispatch('notify', message: 'Pembayaran QRIS berhasil diterima!', type: 'success');
+    }
+
+    public function cancelQrisPayment(): void
+    {
+        if (empty($this->qrisPaymentNumber)) {
+            return;
+        }
+
+        $payment = \App\Models\Payment::where('payment_number', $this->qrisPaymentNumber)->first();
+        if ($payment) {
+            $payment->update(['status' => 'cancelled']);
+            $payment->order->update(['status' => 'void']);
+        }
+
+        $this->showQrisModal = false;
+        $this->qrisPaymentNumber = '';
+        $this->dispatch('notify', message: 'Pembayaran QRIS dibatalkan. Anda dapat mencoba lagi.', type: 'info');
+    }
+    
+    protected function createOrder(string $status = 'paid'): \App\Models\Order
     {
         $order = \App\Models\Order::create([
             'outlet_id' => Auth::user()->outlet_id,
@@ -342,14 +515,14 @@ class QuickOrder extends Page
             'tab_id' => $this->tabId,
             'order_type' => $this->orderType,
             'customer_name' => $this->customerName,
-            'status' => 'paid',
+            'status' => $status,
             'subtotal' => $this->subtotal,
             'tax_amount' => $this->tax_amount,
             'service_charge' => $this->service_charge,
             'total' => $this->rounded_total,
             'rounding_amount' => $this->rounded_total - $this->total,
             'payment_method' => $this->paymentMethod,
-            'paid_at' => now(),
+            'paid_at' => $status === 'paid' ? now() : null,
         ]);
         
         foreach ($this->cart as $item) {
@@ -396,8 +569,10 @@ class QuickOrder extends Page
             Tab::where('id', $this->tabId)->update(['status' => 'active']);
         }
         
-        // Deduct stock for ingredients
-        $this->deductIngredientStock($order);
+        // Deduct stock for ingredients (ONLY if status is paid)
+        if ($status === 'paid') {
+            $this->deductIngredientStock($order);
+        }
         
         return $order;
     }
@@ -427,18 +602,28 @@ class QuickOrder extends Page
         }
     }
     
-    protected function createPayment(\App\Models\Order $order): void
+    protected function createPayment(\App\Models\Order $order, string $status = 'paid'): \App\Models\Payment
     {
+        $methodMap = [
+            'cash' => 'cash',
+            'qris' => 'qris_dynamic',
+            'ewallet' => 'ewallet_gopay',
+            'card' => 'edc_debit',
+            'split' => 'other',
+        ];
+        $mappedMethod = $methodMap[$this->paymentMethod] ?? 'other';
+
         $payment = \App\Models\Payment::create([
             'outlet_id' => Auth::user()->outlet_id,
             'order_id' => $order->id,
-            'user_id' => Auth::id(),
-            'method' => $this->paymentMethod,
+            'payment_number' => 'PAY-' . time() . '-' . mt_rand(1000, 9999),
+            'method' => $mappedMethod,
             'amount' => $this->rounded_total,
             'cash_received' => $this->paymentMethod === 'cash' ? $this->cashReceived : null,
-            'change_amount' => $this->paymentMethod === 'cash' ? $this->change : 0,
-            'status' => 'completed',
-            'paid_at' => now(),
+            'cash_change' => $this->paymentMethod === 'cash' ? $this->change : 0,
+            'status' => $status,
+            'paid_at' => $status === 'paid' ? now() : null,
+            'processed_by' => Auth::id(),
         ]);
         
         if ($this->paymentMethod === 'split') {
@@ -451,6 +636,8 @@ class QuickOrder extends Page
                 ]);
             }
         }
+
+        return $payment;
     }
     
     protected function printReceipt(\App\Models\Order $order): void

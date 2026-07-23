@@ -386,9 +386,9 @@
                     <div class="grid grid-cols-2 gap-2">
                         @foreach(['cash' => 'Tunai', 'qris' => 'QRIS', 'ewallet' => 'E-Wallet', 'card' => 'Kartu', 'split' => 'Split'] as $method => $label)
                             <button
-                                wire:click="$set('paymentMethod', '{{ $method }})"
+                                wire:click="$set('paymentMethod', '{{ $method }}')"
                                 class="px-3 py-2 rounded-lg border-2 text-sm font-medium transition-all
-                                    {{ $paymentMethod === '{{ $method }}' ? 'border-coffee-600 bg-coffee-50 text-coffee-700' : 'border-gray-200 text-gray-600 hover:border-gray-300' }}"
+                                    {{ $paymentMethod === $method ? 'border-coffee-600 bg-coffee-50 text-coffee-700' : 'border-gray-200 text-gray-600 hover:border-gray-300' }}"
                             >
                                 {{ $label }}
                             </button>
@@ -610,6 +610,73 @@
     </div>
     @endif
     
+    <!-- QRIS Payment Modal -->
+    @if($showQrisModal)
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" wire:poll.5s="checkPaymentStatus">
+        <div class="bg-white rounded-xl shadow-xl max-w-md w-full">
+            <div class="p-4 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white z-10">
+                <h3 class="text-lg font-bold text-gray-900">Pembayaran QRIS / E-Wallet</h3>
+                <button wire:click="cancelQrisPayment" class="text-gray-400 hover:text-gray-600">
+                    <i class="heroicon-o-x-mark text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 space-y-6 text-center">
+                <div>
+                    <p class="text-sm text-gray-500">Nomor Invoice</p>
+                    <p class="font-semibold text-gray-800">{{ $qrisPaymentNumber }}</p>
+                </div>
+
+                <div class="bg-coffee-50 border border-coffee-200 rounded-lg p-4 max-w-xs mx-auto">
+                    <p class="text-xs text-gray-600 uppercase tracking-wide font-semibold">Total yang Harus Dibayar</p>
+                    <p class="text-2xl font-bold text-coffee-600 mt-1">Rp {{ number_format($qrisAmount, 0, ',', '.') }}</p>
+                </div>
+
+                <!-- QR Code Display -->
+                <div class="relative w-64 h-64 mx-auto border-2 border-dashed border-gray-200 rounded-xl p-2 bg-white flex items-center justify-center">
+                    @if($qrisQrImageUrl)
+                        <img src="{{ $qrisQrImageUrl }}" alt="QRIS Code" class="w-full h-full object-contain">
+                    @elseif($qrisQrString)
+                        <!-- Fallback using public API if image url not directly provided -->
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={{ urlencode($qrisQrString) }}" alt="QRIS Code" class="w-full h-full object-contain">
+                    @else
+                        <div class="text-gray-400 text-sm flex flex-col items-center">
+                            <i class="heroicon-o-arrow-path animate-spin text-3xl mb-2"></i>
+                            Membuka QR Code...
+                        </div>
+                    @endif
+                </div>
+
+                <div class="space-y-2">
+                    <p class="text-xs text-gray-500">Silakan scan kode QRIS di atas menggunakan GoPay, OVO, DANA, LinkAja, ShopeePay, atau aplikasi Mobile Banking Anda.</p>
+                    @if($qrisExpiresAt)
+                        <p class="text-xs text-red-500 font-semibold flex items-center justify-center gap-1">
+                            <i class="heroicon-o-clock"></i>
+                            Kedaluwarsa pada: {{ $qrisExpiresAt->format('H:i:s') }}
+                        </p>
+                    @endif
+                </div>
+
+                <!-- Actions -->
+                <div class="flex flex-col gap-2 pt-4 border-t border-gray-100">
+                    <button
+                        wire:click="checkPaymentStatus"
+                        class="w-full px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                    >
+                        <i class="heroicon-o-arrow-path"></i> Cek Status Pembayaran
+                    </button>
+                    <button
+                        wire:click="cancelQrisPayment"
+                        class="w-full px-4 py-2 border border-gray-300 hover:bg-gray-50 text-gray-600 rounded-lg text-sm font-medium transition-colors"
+                    >
+                        Batalkan & Kembali
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <!-- Split Bill Modal -->
     @if($showSplitBillModal)
     <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
