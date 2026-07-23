@@ -50,6 +50,17 @@ class ProductVariantResource extends Resource
         ];
     }
 
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+        
+        if ($productId = request()->query('product')) {
+            $query->where('product_id', $productId);
+        }
+        
+        return $query;
+    }
+
     public static function getRecordRouteBindingEloquentQuery(): Builder
     {
         return parent::getRecordRouteBindingEloquentQuery()

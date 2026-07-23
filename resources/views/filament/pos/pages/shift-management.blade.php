@@ -1,4 +1,28 @@
 {{-- resources/views/filament/pos/pages/shift-management.blade.php --}}
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+    tailwind.config = {
+        darkMode: 'class',
+        theme: {
+            extend: {
+                colors: {
+                    coffee: {
+                        50: '#fdfaf7',
+                        100: '#f7f0e9',
+                        200: '#eddccf',
+                        300: '#dfc2ad',
+                        400: '#cca183',
+                        500: '#ba8562',
+                        600: '#8b6b3d',
+                        700: '#75543d',
+                        800: '#2f2212',
+                        900: '#1d140a',
+                    }
+                }
+            }
+        }
+    }
+</script>
 <style>
     /* Dark Mode styling for Warkop POS */
     .dark .bg-white {

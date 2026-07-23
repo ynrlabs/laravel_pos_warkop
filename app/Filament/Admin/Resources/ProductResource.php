@@ -307,18 +307,18 @@ class ProductResource extends Resource
             ->actions([
                 Actions\ActionGroup::make([
                     Actions\EditAction::make(),
-                    // Actions\Action::make('manage_variants')
-                    //     ->label('Kelola Varian')
-                    //     // ->icon('heroicon-o-cube-transparent')
-                    //     // ->url(fn (Product $record) => route('filament.admin.resources.product-variants.index', ['product' => $record])),
-                    // Actions\Action::make('manage_modifiers')
-                    //     ->label('Kelola Modifier')
-                    //     // ->icon('heroicon-o-adjustments-horizontal')
-                    //     // ->url(fn (Product $record) => route('filament.admin.resources.product-modifiers.index', ['product' => $record])),
-                    // Actions\Action::make('manage_toppings')
-                    //     ->label('Kelola Topping')
-                    //     // ->icon('heroicon-o-plus-circle')
-                    //     // ->url(fn (Product $record) => route('filament.admin.resources.product-toppings.index', ['product' => $record])),
+                    Actions\Action::make('manage_variants')
+                        ->label('Kelola Varian')
+                        ->icon('heroicon-o-cube-transparent')
+                        ->url(fn (Product $record) => route('filament.admin.resources.product-variants.index', ['product' => $record])),
+                    Actions\Action::make('manage_modifiers')
+                        ->label('Kelola Modifier')
+                        ->icon('heroicon-o-adjustments-horizontal')
+                        ->url(fn (Product $record) => route('filament.admin.resources.modifiers.index', ['product' => $record])),
+                    Actions\Action::make('manage_toppings')
+                        ->label('Kelola Topping')
+                        ->icon('heroicon-o-plus-circle')
+                        ->url(fn (Product $record) => route('filament.admin.resources.toppings.index', ['product' => $record])),
                     Actions\DeleteAction::make(),
                 ]),
             ])

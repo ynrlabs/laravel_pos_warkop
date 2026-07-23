@@ -6,6 +6,7 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationItem;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -26,6 +27,7 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->id('admin')
             ->path('admin')
+            ->login()
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -36,6 +38,18 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Admin/Widgets'), for: 'App\Filament\Admin\Widgets')
             ->widgets([])
+            ->navigationItems([
+                NavigationItem::make('Buka POS')
+                    ->url('/pos/quick-order', shouldOpenInNewTab: true)
+                    ->icon('heroicon-o-shopping-cart')
+                    ->group('POS')
+                    ->sort(1),
+                NavigationItem::make('Shift Management')
+                    ->url('/pos/shift-management', shouldOpenInNewTab: true)
+                    ->icon('heroicon-o-clock')
+                    ->group('POS')
+                    ->sort(2),
+            ])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

@@ -16,21 +16,26 @@ class TopProductsWidget extends BaseWidget
 
     public function table(Table $table): Table
     {
+        // Wrap aggregation as a subquery so Filament cannot append
+        // extra ORDER BY / pagination columns that violate ONLY_FULL_GROUP_BY.
+        $sub = OrderItem::query()
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->where('orders.status', 'paid')
+            ->select(
+                'order_items.product_name',
+                'order_items.variant_name',
+                DB::raw('SUM(order_items.quantity) as total_qty'),
+                DB::raw('SUM(order_items.subtotal) as total_amount'),
+                DB::raw('MIN(order_items.id) as id')
+            )
+            ->groupBy('order_items.product_name', 'order_items.variant_name')
+            ->orderByDesc('total_qty')
+            ->limit(5);
+
         return $table
             ->query(
-                OrderItem::query()
-                    ->join('orders', 'order_items.order_id', '=', 'orders.id')
-                    ->where('orders.status', 'paid')
-                    ->select(
-                        'order_items.product_name',
-                        'order_items.variant_name',
-                        DB::raw('SUM(order_items.quantity) as total_qty'),
-                        DB::raw('SUM(order_items.subtotal) as total_amount'),
-                        DB::raw('MIN(order_items.id) as id') // Filament table requires unique key
-                    )
-                    ->groupBy('order_items.product_name', 'order_items.variant_name')
-                    ->orderBy('total_qty', 'desc')
-                    ->limit(5)
+                OrderItem::fromSub($sub, 'top_products')
+                    ->select('*')
             )
             ->columns([
                 Tables\Columns\TextColumn::make('product_name')

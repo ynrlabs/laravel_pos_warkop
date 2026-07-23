@@ -27,6 +27,7 @@ class WasteLog extends Model
         'approved_by',
         'approved_at',
         'status',
+        'notes',
     ];
 
     protected $casts = [

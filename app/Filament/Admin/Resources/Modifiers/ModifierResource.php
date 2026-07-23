@@ -50,6 +50,19 @@ class ModifierResource extends Resource
         ];
     }
 
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+        
+        if ($productId = request()->query('product')) {
+            $query->whereHas('modifierGroup.products', function ($q) use ($productId) {
+                $q->where('products.id', $productId);
+            });
+        }
+        
+        return $query;
+    }
+
     public static function getRecordRouteBindingEloquentQuery(): Builder
     {
         return parent::getRecordRouteBindingEloquentQuery()

@@ -11,9 +11,9 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Actions\Action;
-use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
+use Filament\Schemas\Concerns\InteractsWithSchemas;
+use Filament\Schemas\Contracts\HasSchemas;
+use Filament\Schemas\Schema;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Enums\MaxWidth;
@@ -22,9 +22,9 @@ use BackedEnum;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 
-class ShiftManagement extends Page implements HasForms
+class ShiftManagement extends Page implements HasSchemas
 {
-    use InteractsWithForms;
+    use InteractsWithSchemas;
 
     public static function getNavigationIcon(): BackedEnum|string|null
     {
@@ -73,7 +73,7 @@ class ShiftManagement extends Page implements HasForms
         }
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $form): Schema
     {
         return $form
             ->schema([
