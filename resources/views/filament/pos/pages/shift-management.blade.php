@@ -112,9 +112,9 @@
     </div>
 
     {{-- Form Section --}}
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden p-6">
         <form wire:submit.prevent>
-            @livewire('filament-forms', ['form' => $form], key($form->getId()))
+            {{ $this->form }}
         </form>
     </div>
 
