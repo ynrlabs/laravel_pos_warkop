@@ -26,6 +26,8 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 
 class PurchaseOrderResource extends Resource
 {
@@ -94,7 +96,7 @@ class PurchaseOrderResource extends Resource
 
                         DatePicker::make('received_date')
                             ->label('Tanggal Diterima')
-                            ->visible(fn (Forms\Get $get) => in_array($get('status'), ['received', 'partial_received'])),
+                            ->visible(fn (Get $get) => in_array($get('status'), ['received', 'partial_received'])),
 
                         Textarea::make('notes')
                             ->label('Catatan')
@@ -113,7 +115,7 @@ class PurchaseOrderResource extends Resource
                                     ->preload()
                                     ->required()
                                     ->reactive()
-                                    ->afterStateUpdated(fn (Forms\Set $set, ?string $state) => $state ? $set('unit_id', \App\Models\Ingredient::find($state)?->unit_id) : null),
+                                    ->afterStateUpdated(fn (Set $set, ?string $state) => $state ? $set('unit_id', \App\Models\Ingredient::find($state)?->unit_id) : null),
 
                                 TextInput::make('quantity_ordered')
                                     ->label('Qty Pesan')

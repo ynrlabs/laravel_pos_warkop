@@ -95,7 +95,7 @@ class EditShift extends EditRecord
                                     ['denomination' => 100, 'quantity' => 0],
                                 ])
                                 ->reactive()
-                                ->afterStateUpdated(function ($state, \Filament\Forms\Set $set) {
+                                ->afterStateUpdated(function ($state, \Filament\Set $set) {
                                     $total = 0;
                                     foreach ($state as $item) {
                                         $total += ($item['denomination'] ?? 0) * ($item['quantity'] ?? 0);

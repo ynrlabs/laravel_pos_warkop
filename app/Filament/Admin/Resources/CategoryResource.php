@@ -27,6 +27,8 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 
 class CategoryResource extends Resource
 {
@@ -64,7 +66,7 @@ class CategoryResource extends Resource
                             ->required()
                             ->maxLength(50)
                             ->live(onBlur: true)
-                            ->afterStateUpdated(fn (Forms\Set $set, ?string $state) => $set('slug', \Illuminate\Support\Str::slug($state))),
+                            ->afterStateUpdated(fn (Set $set, ?string $state) => $set('slug', \Illuminate\Support\Str::slug($state))),
                         
                         TextInput::make('slug')
                             ->label('Slug')
@@ -100,7 +102,7 @@ class CategoryResource extends Resource
                             ->label('Nama Station KDS')
                             ->maxLength(50)
                             ->placeholder('Barista / Kitchen')
-                            ->visible(fn (Forms\Get $get) => $get('is_kds_station')),
+                            ->visible(fn (Get $get) => $get('is_kds_station')),
                     ])->columns(2),
             ]);
     }

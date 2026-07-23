@@ -153,7 +153,7 @@ class ShiftManagement extends Page implements HasSchemas
                                 ['denomination' => 100, 'quantity' => 0],
                             ])
                             ->live()
-                            ->afterStateUpdated(function ($state, \Filament\Forms\Set $set, $get) {
+                            ->afterStateUpdated(function ($state, \Filament\Set $set, $get) {
                                 // Calculate total opening cash
                                 $total = 0;
                                 foreach ($state as $item) {

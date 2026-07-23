@@ -6,6 +6,8 @@ use App\Filament\Admin\Resources\ProductResource\Pages;
 use App\Models\Product;
 use Filament\Forms;
 use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Resources\Resource;
 use BackedEnum;
 use Filament\Tables;
@@ -72,7 +74,7 @@ class ProductResource extends Resource
                             ->required()
                             ->maxLength(100)
                             ->live(onBlur: true)
-                            ->afterStateUpdated(fn (Forms\Set $set, ?string $state) => $set('slug', \Illuminate\Support\Str::slug($state))),
+                            ->afterStateUpdated(fn (Set $set, ?string $state) => $set('slug', \Illuminate\Support\Str::slug($state))),
                         
                         TextInput::make('slug')
                             ->label('Slug')
@@ -112,7 +114,7 @@ class ProductResource extends Resource
                             ->step(100)
                             ->default(0)
                             ->required()
-                            ->visible(fn (Forms\Get $get) => $get('type') === 'finished_good'),
+                            ->visible(fn (Get $get) => $get('type') === 'finished_good'),
                         
                         TextInput::make('cost_price')
                             ->label('HPP (Otomatis dari Recipe)')
@@ -154,7 +156,7 @@ class ProductResource extends Resource
                             ->label('Track Stok')
                             ->default(true),
                     ])->columns(4)
-                    ->visible(fn (Forms\Get $get) => $get('type') === 'finished_good'),
+                    ->visible(fn (Get $get) => $get('type') === 'finished_good'),
 
                 Section::make('Tampilan POS')
                     ->schema([

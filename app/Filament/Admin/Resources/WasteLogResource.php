@@ -27,6 +27,8 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 
 class WasteLogResource extends Resource
 {
@@ -83,7 +85,7 @@ class WasteLogResource extends Resource
                             ->preload()
                             ->requiredWithOut('product_id')
                             ->reactive()
-                            ->afterStateUpdated(function (Forms\Set $set, ?string $state) {
+                            ->afterStateUpdated(function (Set $set, ?string $state) {
                                 if ($state) {
                                     $ingredient = \App\Models\Ingredient::find($state);
                                     if ($ingredient) {
@@ -100,7 +102,7 @@ class WasteLogResource extends Resource
                             ->preload()
                             ->requiredWithOut('ingredient_id')
                             ->reactive()
-                            ->afterStateUpdated(function (Forms\Set $set, ?string $state) {
+                            ->afterStateUpdated(function (Set $set, ?string $state) {
                                 if ($state) {
                                     $product = \App\Models\Product::find($state);
                                     if ($product) {
@@ -185,7 +187,7 @@ class WasteLogResource extends Resource
                             ->relationship('approvedBy', 'name')
                             ->searchable()
                             ->preload()
-                            ->visible(fn (Forms\Get $get) => $get('status') === 'approved'),
+                            ->visible(fn (Get $get) => $get('status') === 'approved'),
 
                         Textarea::make('notes')
                             ->label('Catatan')
