@@ -7,7 +7,7 @@
 **Status:** Draft
 **Teknologi Stack:** Laravel 11 + FilamentPHP 3 + Laravel Reverb (WebSocket) + MySQL/PostgreSQL
 
-name database: db_pos_warkop
+* [ ] name database: db_pos_warkop
 
 ---
 
@@ -46,6 +46,7 @@ Membangun POS warkop yang **cepat, andal, dan mudah dipakai** oleh kasir (non-te
 ### 1.4 Design System & Visual Guidelines
 
 Sistem UI/UX dirancang khusus untuk lingkungan Warkop dengan tingkat kepadatan informasi tinggi dan kontras yang jelas.
+
 - **Dokumentasi Design System**: [DESIGN.md](file:///d:/laragon/www/laravel_pos_warkop/stitch_warkop_pos_ui_design/warkop_pos_design_system/DESIGN.md)
 - **Desain Warna & Layout**: Didominasi oleh warna hangat bertema kopi (*Deep Coffee* & *Creamy Milk*) untuk kenyamanan mata kasir dan barista dalam shift panjang.
 
@@ -124,33 +125,39 @@ Produk (Parent)
 - `Ctrl+S` → Simpan tab (Open Bill)
 
 #### 3.1.6 Rancangan UI/UX (Mockup & Prototype)
+
 Untuk visualisasi dan purwarupa interaktif dari Modul Transaksi Kasir, silakan merujuk pada rancangan berikut:
 
 ##### A. POS Quick Order (Layar Utama Kasir)
+
 - Layar utama transaksi kasir dengan visualisasi grid kategori, pencarian menu, dan keranjang belanja.
 - [Folder UI](file:///d:/laragon/www/laravel_pos_warkop/stitch_warkop_pos_ui_design/pos_quick_order_warkop_pos) | [Interactive Prototype (HTML)](file:///d:/laragon/www/laravel_pos_warkop/stitch_warkop_pos_ui_design/pos_quick_order_warkop_pos/code.html)
 - Preview Desain:
   ![POS Quick Order Screen](file:///d:/laragon/www/laravel_pos_warkop/stitch_warkop_pos_ui_design/pos_quick_order_warkop_pos/screen.png)
 
 ##### B. Table Management (Manajemen Meja Dine-in)
+
 - Tata letak meja visual warkop untuk memantau status dan durasi pesanan aktif (*Open Tab*).
 - [Folder UI](file:///d:/laragon/www/laravel_pos_warkop/stitch_warkop_pos_ui_design/table_management_warkop_pos) | [Interactive Prototype (HTML)](file:///d:/laragon/www/laravel_pos_warkop/stitch_warkop_pos_ui_design/table_management_warkop_pos/code.html)
 - Preview Desain:
   ![Table Management Screen](file:///d:/laragon/www/laravel_pos_warkop/stitch_warkop_pos_ui_design/table_management_warkop_pos/screen.png)
 
 ##### C. Self Order E-Menu (Pesanan Mandiri)
+
 - Layar antarmuka ramah pelanggan untuk melakukan pemesanan mandiri lewat tablet di meja.
 - [Folder UI](file:///d:/laragon/www/laravel_pos_warkop/stitch_warkop_pos_ui_design/self_order_e_menu_warkop_pos) | [Interactive Prototype (HTML)](file:///d:/laragon/www/laravel_pos_warkop/stitch_warkop_pos_ui_design/self_order_e_menu_warkop_pos/code.html)
 - Preview Desain:
   ![Self Order E-Menu](file:///d:/laragon/www/laravel_pos_warkop/stitch_warkop_pos_ui_design/self_order_e_menu_warkop_pos/screen.png)
 
 ##### D. Customer Queue Display (Layar Antrian Pelanggan)
+
 - Tampilan display antrian untuk dipasang di TV/Monitor agar pelanggan tahu pesanan yang siap diambil.
 - [Folder UI](file:///d:/laragon/www/laravel_pos_warkop/stitch_warkop_pos_ui_design/customer_queue_display_warkop_pos) | [Interactive Prototype (HTML)](file:///d:/laragon/www/laravel_pos_warkop/stitch_warkop_pos_ui_design/customer_queue_display_warkop_pos/code.html)
 - Preview Desain:
   ![Customer Queue Display](file:///d:/laragon/www/laravel_pos_warkop/stitch_warkop_pos_ui_design/customer_queue_display_warkop_pos/screen.png)
 
 ##### E. Quick Lock Mode & Login Screen
+
 - Fitur penguncian cepat layar kasir untuk mengamankan POS saat kasir meninggalkan meja.
 - [Folder UI Quick Lock](file:///d:/laragon/www/laravel_pos_warkop/stitch_warkop_pos_ui_design/quick_lock_mode_warkop_pos) | [Interactive Prototype Quick Lock (HTML)](file:///d:/laragon/www/laravel_pos_warkop/stitch_warkop_pos_ui_design/quick_lock_mode_warkop_pos/code.html)
 - Preview Desain Quick Lock:
@@ -210,9 +217,11 @@ Untuk visualisasi dan purwarupa interaktif dari Modul Transaksi Kasir, silakan m
 - **Analytics:** Avg prep time per item, bottleneck detection
 
 #### 3.2.5 Rancangan UI/UX (Mockup & Prototype)
+
 Untuk visualisasi antarmuka Kitchen Display System (KDS), silakan merujuk pada rancangan berikut:
 
 ##### KDS Barista & Kitchen Screen
+
 - Layar pemantauan pesanan real-time untuk barista dan dapur dengan filter stasiun, penanda keterlambatan waktu, dan bump control.
 - [Folder UI](file:///d:/laragon/www/laravel_pos_warkop/stitch_warkop_pos_ui_design/kds_barista_warkop_pos) | [Interactive Prototype (HTML)](file:///d:/laragon/www/laravel_pos_warkop/stitch_warkop_pos_ui_design/kds_barista_warkop_pos/code.html)
 - Preview Desain:
@@ -254,15 +263,18 @@ Untuk visualisasi antarmuka Kitchen Display System (KDS), silakan merujuk pada r
 - **Combo/Paket:** Harga spesial untuk bundling (Nasi + Ayam + Es Teh)
 
 #### 3.3.4 Rancangan UI/UX (Mockup & Prototype)
+
 Untuk visualisasi proses pembayaran dan penanganan piutang warkop, silakan merujuk pada rancangan berikut:
 
 ##### A. Payment Screen (Layar Pembayaran & Kembalian)
+
 - Fitur kalkulator kembalian cepat, pembayaran split, e-wallet, dan QRIS dinamis.
 - [Folder UI](file:///d:/laragon/www/laravel_pos_warkop/stitch_warkop_pos_ui_design/payment_screen_warkop_pos) | [Interactive Prototype (HTML)](file:///d:/laragon/www/laravel_pos_warkop/stitch_warkop_pos_ui_design/payment_screen_warkop_pos/code.html)
 - Preview Desain:
   ![Payment Screen](file:///d:/laragon/www/laravel_pos_warkop/stitch_warkop_pos_ui_design/payment_screen_warkop_pos/screen.png)
 
 ##### B. Customer Ledger (Buku Hutang / Piutang Pelanggan)
+
 - Antarmuka pencatatan hutang pelanggan warkop, status jatuh tempo, riwayat transaksi, dan kalkulator cicilan piutang.
 - [Folder UI](file:///d:/laragon/www/laravel_pos_warkop/stitch_warkop_pos_ui_design/customer_ledger_warkop_pos) | [Interactive Prototype (HTML)](file:///d:/laragon/www/laravel_pos_warkop/stitch_warkop_pos_ui_design/customer_ledger_warkop_pos/code.html)
 - Preview Desain:
@@ -307,9 +319,11 @@ Menu: Kopi Susu (1 porsi)
 - **Alert Margin:** Jika margin < target (misal 40%), warning di menu management
 
 #### 3.4.5 Rancangan UI/UX (Mockup & Prototype)
+
 Untuk visualisasi pengelolaan stok bahan baku, resep/BOM, dan pembelian supplier, silakan merujuk pada rancangan berikut:
 
 ##### Inventory Operations Screen
+
 - Modul administrasi stok, detail supplier, histori pergerakan stok, dan stock opname terintegrasi.
 - [Folder UI](file:///d:/laragon/www/laravel_pos_warkop/stitch_warkop_pos_ui_design/inventory_operations_warkop_pos) | [Interactive Prototype (HTML)](file:///d:/laragon/www/laravel_pos_warkop/stitch_warkop_pos_ui_design/inventory_operations_warkop_pos/code.html)
 - Preview Desain:
@@ -362,15 +376,18 @@ SHIFT PAGI (06:00 - 14:00)          SHIFT MALAM (14:00 - 22:00)
 - **WhatsApp Gateway:** Kirim ringkasan ke grup owner (opsional, via Fonnte/Wablas)
 
 #### 3.5.4 Rancangan UI/UX (Mockup & Prototype)
+
 Untuk visualisasi laporan penutupan shift kasir dan pengelolaan kas operasional, silakan merujuk pada rancangan berikut:
 
 ##### A. Shift Closing (Rekonsiliasi Kasir & Tutup Shift)
+
 - Formulir denominasi fisik, validasi selisih kas otomatis, dan penutupan sesi shift kasir.
 - [Folder UI](file:///d:/laragon/www/laravel_pos_warkop/stitch_warkop_pos_ui_design/shift_closing_warkop_pos) | [Interactive Prototype (HTML)](file:///d:/laragon/www/laravel_pos_warkop/stitch_warkop_pos_ui_design/shift_closing_warkop_pos/code.html)
 - Preview Desain:
   ![Shift Closing Screen](file:///d:/laragon/www/laravel_pos_warkop/stitch_warkop_pos_ui_design/shift_closing_warkop_pos/screen.png)
 
 ##### B. Petty Cash (Buku Kas Kecil Operasional)
+
 - Pencatatan pengeluaran operasional kecil (es batu tambahan, air mineral darurat, bumbu dapur) untuk menjaga keakuratan kas harian.
 - [Folder UI](file:///d:/laragon/www/laravel_pos_warkop/stitch_warkop_pos_ui_design/petty_cash_warkop_pos) | [Interactive Prototype (HTML)](file:///d:/laragon/www/laravel_pos_warkop/stitch_warkop_pos_ui_design/petty_cash_warkop_pos/code.html)
 - Preview Desain:
@@ -406,9 +423,11 @@ Untuk visualisasi laporan penutupan shift kasir dan pengelolaan kas operasional,
 - **Integrasi:** Midtrans/Xendit keys, WA Gateway, Google Maps (delivery nanti)
 
 #### 3.6.4 Rancangan UI/UX (Mockup & Prototype)
+
 Untuk visualisasi halaman login dan pengaturan POS pendukung, silakan merujuk pada rancangan berikut:
 
 ##### POS Login & Lock Screen
+
 - Layar otentikasi kasir/manager, input nomor PIN cepat, dan transisi pemulihan session yang aman.
 - [Folder UI](file:///d:/laragon/www/laravel_pos_warkop/stitch_warkop_pos_ui_design/pos_login_lock_screen_warkop_pos) | [Interactive Prototype (HTML)](file:///d:/laragon/www/laravel_pos_warkop/stitch_warkop_pos_ui_design/pos_login_lock_screen_warkop_pos/code.html)
 - Preview Desain:
