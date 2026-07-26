@@ -291,6 +291,7 @@ class QuickOrder extends Page
         return max(0, $this->cashReceived - $this->rounded_total);
     }
     
+    #[On('open-payment-modal-shortcut')]
     public function openPaymentModal(): void
     {
         if (empty($this->cart)) {

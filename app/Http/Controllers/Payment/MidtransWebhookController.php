@@ -98,7 +98,7 @@ class MidtransWebhookController extends Controller
         }
 
         // Redirect to POS payment page
-        return redirect()->route('pos.quick-order')
+        return redirect('/pos/quick-order')
             ->with('payment_status', $payment?->status ?? 'unknown');
     }
 }

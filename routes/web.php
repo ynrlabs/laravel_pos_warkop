@@ -36,7 +36,7 @@ Route::prefix('payment')->group(function () {
 // POS Routes (Inertia.js)
 Route::prefix('pos')->group(function () {
     // Quick Order (Inertia POS)
-    Route::get('quick-order', [QuickOrderController::class, 'index'])->name('pos.quick-order');
+    Route::get('inertia-quick-order', [QuickOrderController::class, 'index'])->name('pos.quick-order');
     Route::post('order/process', [QuickOrderController::class, 'processOrder'])->name('pos.order.process');
     
     // Tab Management

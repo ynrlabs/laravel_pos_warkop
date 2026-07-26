@@ -402,10 +402,12 @@
             
             <div class="flex flex-col gap-2 pt-gutter border-t border-outline-variant mt-auto">
                 <div class="grid grid-cols-2 gap-2">
-                    <button class="h-10 text-[10px] font-bold bg-secondary-container text-on-secondary-container rounded border border-outline-variant">F1: CARI</button>
-                    <button class="h-10 text-[10px] font-bold bg-secondary-container text-on-secondary-container rounded border border-outline-variant">F2: DISKON</button>
-                    <button class="h-10 text-[10px] font-bold bg-secondary-container text-on-secondary-container rounded border border-outline-variant">F3: LACI</button>
-                    <button class="h-10 text-[10px] font-bold bg-secondary-container text-on-secondary-container rounded border border-outline-variant">F4: STRUK</button>
+                    <button onclick="document.getElementById('pos-search-input')?.focus()" class="h-10 text-[11px] font-bold bg-secondary-container text-on-secondary-container rounded-lg border border-outline-variant hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-1">
+                        <kbd class="px-1 py-0.5 text-[9px] bg-surface/80 rounded border font-mono">F1</kbd> CARI
+                    </button>
+                    <button wire:click="openPaymentModal" class="h-10 text-[11px] font-bold bg-secondary-container text-on-secondary-container rounded-lg border border-outline-variant hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-1" @if(empty($cart)) disabled @endif>
+                        <kbd class="px-1 py-0.5 text-[9px] bg-surface/80 rounded border font-mono">F4</kbd> BAYAR
+                    </button>
                 </div>
             </div>
         </aside>
@@ -413,18 +415,27 @@
         <!-- Center Menu Grid Section -->
         <section class="flex-1 flex flex-col bg-background p-gutter gap-gutter overflow-hidden h-full">
             <div class="flex justify-between items-center border-b border-outline-variant pb-stack-md">
-                <div class="flex gap-2">
-                    <button class="px-4 py-1 rounded-full bg-primary text-on-primary font-label-caps text-xs font-semibold">Semua Menu</button>
+                <div class="flex items-center gap-2">
+                    <span class="px-4 py-1.5 rounded-full bg-primary text-on-primary font-label-caps text-xs font-bold shadow-sm">
+                        {{ is_null($selectedCategoryId) ? 'Semua Menu' : ($categories->find($selectedCategoryId)->name ?? 'Menu') }}
+                    </span>
+                    <span class="text-xs text-on-surface-variant font-medium">({{ $products->count() }} item)</span>
                 </div>
                 <!-- Search bar -->
-                <div class="relative w-64">
+                <div class="relative w-72">
                     <input 
-                        wire:model.debounce.300ms="search"
+                        id="pos-search-input"
+                        wire:model.live.debounce.300ms="search"
                         type="text" 
-                        placeholder="Cari menu..." 
-                        class="w-full pl-9 pr-4 py-1.5 border border-outline-variant rounded-full bg-surface text-on-surface focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                        placeholder="Cari menu (Tekan F1)..." 
+                        class="w-full pl-9 pr-8 py-2 border border-outline-variant rounded-full bg-surface text-on-surface focus:ring-2 focus:ring-primary focus:border-transparent text-sm shadow-sm transition-all"
                     >
                     <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg">search</span>
+                    @if(!empty($search))
+                        <button wire:click="$set('search', '')" class="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface">
+                            <span class="material-symbols-outlined text-sm">close</span>
+                        </button>
+                    @endif
                 </div>
             </div>
             
@@ -1174,6 +1185,21 @@
         Livewire.on('remove-split', (index) => {
             @this.$wire.call('removeSplitPayment', index);
         });
+    });
+
+    // Keyboard shortcuts handler for POS cashier
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'F1') {
+            e.preventDefault();
+            const searchInput = document.getElementById('pos-search-input');
+            if (searchInput) {
+                searchInput.focus();
+                searchInput.select();
+            }
+        } else if (e.key === 'F4') {
+            e.preventDefault();
+            Livewire.dispatch('open-payment-modal-shortcut');
+        }
     });
 
     function toggleThemeMode() {
