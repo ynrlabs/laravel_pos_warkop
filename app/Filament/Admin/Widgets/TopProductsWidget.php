@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Widgets;
 
+use App\Models\OrderItem;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
@@ -15,29 +16,23 @@ class TopProductsWidget extends BaseWidget
 
     public function table(Table $table): Table
     {
-        // Use DB::query()->fromSub() to completely avoid Eloquent model scopes
-        // (including soft-delete deleted_at) being appended to the outer query.
-        $sub = DB::table('order_items')
+        $query = OrderItem::query()
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
             ->where('orders.status', 'paid')
-            ->whereNull('order_items.deleted_at')
-            ->select(
+            ->select([
                 'order_items.product_name',
                 'order_items.variant_name',
                 DB::raw('SUM(order_items.quantity) as total_qty'),
                 DB::raw('SUM(order_items.subtotal) as total_amount'),
-                DB::raw('MIN(order_items.id) as id')
-            )
+                DB::raw('MIN(order_items.id) as id'),
+            ])
             ->groupBy('order_items.product_name', 'order_items.variant_name')
             ->orderByDesc('total_qty')
             ->limit(5);
 
         return $table
-            ->query(
-                // fromSub on DB::query() returns a plain query builder — no model,
-                // no global scopes, Filament can add its own pagination safely.
-                DB::query()->fromSub($sub, 'top_products')->select('*')
-            )
+            ->query($query)
+            ->defaultKeySort(false)
             ->columns([
                 Tables\Columns\TextColumn::make('product_name')
                     ->label('Nama Produk')
