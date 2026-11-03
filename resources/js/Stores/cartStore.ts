@@ -72,15 +72,15 @@ export const useCartStore = defineStore('cart', () => {
     items.value.reduce((sum, item) => sum + item.subtotal, 0)
   );
 
-  const taxRate = computed<number>(() => 0.11);
-  const serviceChargeRate = computed<number>(() => 0.05);
+  const taxRate = ref<number>(0.11);
+  const serviceChargeRate = ref<number>(0.05);
+  const rounding = ref<number>(100);
 
   const taxAmount = computed<number>(() => Math.round(subtotal.value * taxRate.value));
   const serviceCharge = computed<number>(() => Math.round(subtotal.value * serviceChargeRate.value));
   const total = computed<number>(() => subtotal.value + taxAmount.value + serviceCharge.value);
 
-  const rounding = computed<number>(() => 100);
-  const roundedTotal = computed<number>(() => Math.ceil(total.value / rounding.value) * rounding.value);
+  const roundedTotal = computed<number>(() => (rounding.value > 0 ? Math.ceil(total.value / rounding.value) * rounding.value : total.value));
   const change = computed<number>(() => Math.max(0, cashReceived.value - roundedTotal.value));
 
   const isEmpty = computed<boolean>(() => items.value.length === 0);
@@ -94,6 +94,12 @@ export const useCartStore = defineStore('cart', () => {
   });
 
   // Actions
+  function setOutletSettings(settings?: { tax_rate?: number; service_charge?: number; rounding?: number }) {
+    if (settings?.tax_rate !== undefined) taxRate.value = Number(settings.tax_rate);
+    if (settings?.service_charge !== undefined) serviceChargeRate.value = Number(settings.service_charge);
+    if (settings?.rounding !== undefined) rounding.value = Number(settings.rounding);
+  }
+
   function addItem(product: Product, variant: ProductVariant | null = null) {
     const variantId = variant?.id ?? null;
     const variantName = variant?.name ?? null;
@@ -522,6 +528,7 @@ export const useCartStore = defineStore('cart', () => {
     canPay,
     hasRequiredModifiers,
 
+    setOutletSettings,
     addItem,
     addItemToCart,
     updateQuantity,

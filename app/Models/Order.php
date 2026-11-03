@@ -11,6 +11,7 @@ class Order extends Model
 
     protected $fillable = [
         'outlet_id',
+        'shift_id',
         'user_id',
         'table_id',
         'tab_id',
@@ -38,6 +39,11 @@ class Order extends Model
     public function outlet()
     {
         return $this->belongsTo(Outlet::class);
+    }
+
+    public function shift()
+    {
+        return $this->belongsTo(Shift::class);
     }
 
     public function user()

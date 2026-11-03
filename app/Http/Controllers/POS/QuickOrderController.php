@@ -8,6 +8,9 @@ use App\Models\Product;
 use App\Models\Table as TableModel;
 use App\Models\Tab;
 use App\Models\Shift;
+use App\Models\ShiftDefinition;
+use App\Models\ShiftCashDetail;
+use App\Models\ShiftSummary;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderItemModifier;
@@ -36,9 +39,28 @@ class QuickOrderController extends Controller
         // Get current open shift
         $currentShift = Shift::where('outlet_id', $outletId)
             ->where('user_id', $userId)
-            ->whereIn('status', ['opened', 'closed'])
+            ->where('status', 'opened')
             ->latest('shift_date')
             ->first();
+
+        // Shift definitions
+        $shiftDefinitions = ShiftDefinition::where('outlet_id', $outletId)
+            ->where('is_active', true)
+            ->ordered()
+            ->get();
+
+        if ($shiftDefinitions->isEmpty()) {
+            $defaultShift = ShiftDefinition::create([
+                'outlet_id' => $outletId,
+                'name' => 'Shift Reguler',
+                'code' => 'REG',
+                'start_time' => '07:00',
+                'end_time' => '23:00',
+                'is_active' => true,
+                'sort_order' => 1,
+            ]);
+            $shiftDefinitions = collect([$defaultShift]);
+        }
 
         // Categories
         $categories = Category::where('outlet_id', $outletId)
@@ -99,13 +121,24 @@ class QuickOrderController extends Controller
                 return $tab;
             });
 
+        $outlet = Auth::user()->outlet;
+        $outletSettings = [
+            'tax_rate' => (float) ($outlet?->settings['tax_rate'] ?? 0.11),
+            'service_charge' => (float) ($outlet?->settings['service_charge'] ?? 0.05),
+            'rounding' => (int) ($outlet?->settings['rounding'] ?? 100),
+        ];
+
         return Inertia::render('POS/QuickOrder', [
             'categories' => $categories,
             'products' => $products,
             'tables' => $tables,
             'activeTabs' => $activeTabs,
+            'outletSettings' => $outletSettings,
+            'shiftDefinitions' => $shiftDefinitions,
             'currentShift' => $currentShift ? [
                 'id' => $currentShift->id,
+                'status' => $currentShift->status,
+                'shift_date' => $currentShift->shift_date,
                 'opening_cash' => $currentShift->opening_cash,
                 'total_cash_sales' => $currentShift->total_cash_sales,
                 'total_non_cash_sales' => $currentShift->total_non_cash_sales,
@@ -139,7 +172,19 @@ class QuickOrderController extends Controller
         $outletId = Auth::user()->outlet_id;
         $userId = Auth::id();
 
-        return DB::transaction(function () use ($request, $outletId, $userId) {
+        $activeShift = Shift::where('outlet_id', $outletId)
+            ->where('user_id', $userId)
+            ->where('status', 'opened')
+            ->first();
+
+        if (! $activeShift) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Harap buka shift kasir terlebih dahulu sebelum memproses transaksi.',
+            ], 422);
+        }
+
+        return DB::transaction(function () use ($request, $outletId, $userId, $activeShift) {
             $cart = $request->cart;
             $orderType = $request->order_type;
             $tableId = $orderType === 'dine_in' ? $request->table_id : null;
@@ -166,6 +211,7 @@ class QuickOrderController extends Controller
             // Create order
             $order = Order::create([
                 'outlet_id' => $outletId,
+                'shift_id' => $activeShift->id,
                 'user_id' => $userId,
                 'table_id' => $tableId,
                 'tab_id' => $tabId,
@@ -225,7 +271,11 @@ class QuickOrderController extends Controller
 
             // Update tab if exists
             if ($tabId) {
-                Tab::where('id', $tabId)->update(['status' => 'active']);
+                Tab::where('id', $tabId)->update([
+                    'status' => $orderStatus === 'paid' ? 'paid' : 'hold',
+                    'closed_at' => $orderStatus === 'paid' ? now() : null,
+                    'closed_by' => $orderStatus === 'paid' ? $userId : null,
+                ]);
             }
 
             // Create payment record
@@ -336,22 +386,30 @@ class QuickOrderController extends Controller
      */
     protected function finalizeOrder(Order $order)
     {
+        if ($order->status === 'paid' && ! $order->wasRecentlyCreated) {
+            return;
+        }
+
+        if ($order->status !== 'paid') {
+            $order->update([
+                'status' => 'paid',
+                'paid_at' => $order->paid_at ?? now(),
+            ]);
+        }
+
         // Deduct ingredient stock
         $this->deductIngredientStock($order);
 
-        // Update shift summary
-        $shift = Shift::where('outlet_id', $order->outlet_id)
-            ->where('user_id', $order->user_id)
-            ->whereIn('status', ['opened', 'closed'])
-            ->latest('shift_date')
-            ->first();
+        // Ensure order is linked to active shift if not yet assigned
+        if (! $order->shift_id) {
+            $shift = Shift::where('outlet_id', $order->outlet_id)
+                ->where('user_id', $order->user_id)
+                ->where('status', 'opened')
+                ->latest('shift_date')
+                ->first();
 
-        if ($shift) {
-            $shift->increment('transaction_count');
-            if ($order->payment_method === 'cash') {
-                $shift->increment('total_cash_sales', $order->total);
-            } else {
-                $shift->increment('total_non_cash_sales', $order->total);
+            if ($shift) {
+                $order->update(['shift_id' => $shift->id]);
             }
         }
 
@@ -426,8 +484,8 @@ class QuickOrderController extends Controller
             ];
         });
 
-        // Delete the tab after loading
-        $tab->delete();
+        // Mark tab as hold while loaded into POS
+        $tab->update(['status' => 'hold']);
 
         return response()->json([
             'success' => true,
@@ -786,9 +844,11 @@ class QuickOrderController extends Controller
             ], 404);
         }
 
-        // Already paid via webhook
+        // Already paid via webhook or gateway query
         if ($payment->status === 'paid') {
-            $this->finalizeOrder($payment->order);
+            if ($payment->order && $payment->order->status !== 'paid') {
+                $this->finalizeOrder($payment->order);
+            }
             return response()->json([
                 'success' => true,
                 'payment_status' => 'paid',
@@ -882,6 +942,151 @@ class QuickOrderController extends Controller
             'tax_amount' => $taxAmount,
             'service_charge_amount' => $serviceCharge,
             'total_amount' => $roundedTotal,
+        ]);
+    }
+
+    public function openShift(Request $request)
+    {
+        $request->validate([
+            'opening_cash' => 'required|numeric|min:0',
+            'shift_definition_id' => 'nullable|exists:shift_definitions,id',
+            'notes' => 'nullable|string|max:500',
+        ]);
+
+        $outletId = Auth::user()->outlet_id;
+        $userId = Auth::id();
+
+        $existing = Shift::where('outlet_id', $outletId)
+            ->where('user_id', $userId)
+            ->where('status', 'opened')
+            ->first();
+
+        if ($existing) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda masih memiliki shift yang sedang aktif.',
+            ], 422);
+        }
+
+        $shiftDefId = $request->shift_definition_id;
+        if (! $shiftDefId) {
+            $shiftDef = ShiftDefinition::where('outlet_id', $outletId)->where('is_active', true)->first();
+            if (! $shiftDef) {
+                $shiftDef = ShiftDefinition::create([
+                    'outlet_id' => $outletId,
+                    'name' => 'Shift Reguler',
+                    'code' => 'REG',
+                    'start_time' => '07:00',
+                    'end_time' => '23:00',
+                    'is_active' => true,
+                    'sort_order' => 1,
+                ]);
+            }
+            $shiftDefId = $shiftDef->id;
+        }
+
+        $shift = DB::transaction(function () use ($outletId, $userId, $shiftDefId, $request) {
+            $shift = Shift::create([
+                'outlet_id' => $outletId,
+                'shift_definition_id' => $shiftDefId,
+                'user_id' => $userId,
+                'shift_date' => today(),
+                'status' => 'opened',
+                'opened_at' => now(),
+                'notes' => $request->notes,
+            ]);
+
+            ShiftCashDetail::create([
+                'shift_id' => $shift->id,
+                'type' => 'opening',
+                'denomination' => (float) $request->opening_cash,
+                'quantity' => 1,
+                'notes' => 'Modal awal kasir',
+            ]);
+
+            return $shift;
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Shift berhasil dibuka.',
+            'shift' => [
+                'id' => $shift->id,
+                'status' => $shift->status,
+                'opening_cash' => (float) $request->opening_cash,
+                'total_cash_sales' => 0,
+                'total_non_cash_sales' => 0,
+                'transaction_count' => 0,
+            ],
+        ]);
+    }
+
+    public function closeShift(Request $request)
+    {
+        $request->validate([
+            'actual_cash' => 'required|numeric|min:0',
+            'variance_notes' => 'nullable|string|max:500',
+        ]);
+
+        $outletId = Auth::user()->outlet_id;
+        $userId = Auth::id();
+
+        $shift = Shift::where('outlet_id', $outletId)
+            ->where('user_id', $userId)
+            ->where('status', 'opened')
+            ->latest('shift_date')
+            ->first();
+
+        if (! $shift) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tidak ada shift aktif yang dapat ditutup.',
+            ], 422);
+        }
+
+        DB::transaction(function () use ($shift, $request) {
+            ShiftCashDetail::create([
+                'shift_id' => $shift->id,
+                'type' => 'closing',
+                'denomination' => (float) $request->actual_cash,
+                'quantity' => 1,
+                'notes' => 'Hitung fisik kasir akhir shift',
+            ]);
+
+            $openingCash = $shift->opening_cash;
+            $cashSales = $shift->total_cash_sales;
+            $nonCashSales = $shift->total_non_cash_sales;
+            $refundAmount = $shift->refund_amount;
+            $expectedCash = $openingCash + $cashSales - $refundAmount;
+            $actualCash = (float) $request->actual_cash;
+            $variance = $actualCash - $expectedCash;
+
+            ShiftSummary::updateOrCreate(
+                ['shift_id' => $shift->id],
+                [
+                    'opening_cash' => $openingCash,
+                    'cash_sales' => $cashSales,
+                    'non_cash_sales' => $nonCashSales,
+                    'refund_amount' => $refundAmount,
+                    'expected_cash' => $expectedCash,
+                    'actual_cash' => $actualCash,
+                    'variance_notes' => $variance != 0 ? ($request->variance_notes ?: 'Terdapat selisih kas fisik') : null,
+                    'transaction_count' => $shift->transaction_count,
+                    'void_count' => $shift->void_count,
+                    'refund_count' => $shift->refund_count,
+                ]
+            );
+
+            $shift->update([
+                'status' => 'closed',
+                'closed_at' => now(),
+                'notes' => $request->variance_notes ?: $shift->notes,
+            ]);
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Shift berhasil ditutup.',
         ]);
     }
 }

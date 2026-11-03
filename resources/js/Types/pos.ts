@@ -218,11 +218,19 @@ export interface QuickOrderPageProps {
   activeTabs: Tab[];
   currentShift: {
     id: number;
+    status?: string;
+    shift_date?: string;
     opening_cash: number;
     total_cash_sales: number;
     total_non_cash_sales: number;
     transaction_count: number;
   } | null;
+  shiftDefinitions?: Array<{ id: number; name: string }>;
+  outletSettings?: {
+    tax_rate: number;
+    service_charge: number;
+    rounding: number;
+  };
   flash?: {
     message?: string;
     error?: string;

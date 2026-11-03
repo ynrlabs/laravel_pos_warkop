@@ -46,6 +46,10 @@ Route::middleware(['auth'])->prefix('pos')->group(function () {
     Route::get('/', [QuickOrderController::class, 'index'])->name('pos.quick-order');
     Route::post('order/process', [QuickOrderController::class, 'processOrder'])->name('pos.order.process');
     
+    // Shift Management
+    Route::post('shift/open', [QuickOrderController::class, 'openShift'])->name('pos.shift.open');
+    Route::post('shift/close', [QuickOrderController::class, 'closeShift'])->name('pos.shift.close');
+
     // Tab Management
     Route::post('tab/save', [QuickOrderController::class, 'saveTab'])->name('pos.tab.save');
     Route::post('tab/load/{tab}', [QuickOrderController::class, 'loadTab'])->name('pos.tab.load');

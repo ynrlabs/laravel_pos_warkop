@@ -20,7 +20,7 @@ return new class extends Migration
             $table->decimal('refund_amount', 15, 2)->default(0)->comment('Total refund/void');
             $table->decimal('expected_cash', 15, 2)->default(0)->comment('Opening + Cash Sales - Refund');
             $table->decimal('actual_cash', 15, 2)->default(0)->comment('Hitung fisik dari closing details');
-            $table->decimal('variance', 15, 2)->generatedAlwaysAs('actual_cash - expected_cash')->comment('Selisih (plus/minus)');
+            $table->decimal('variance', 15, 2)->storedAs('actual_cash - expected_cash')->comment('Selisih (plus/minus)');
             $table->text('variance_notes')->nullable()->comment('Wajib diisi jika variance != 0');
             $table->integer('transaction_count')->default(0);
             $table->integer('void_count')->default(0);

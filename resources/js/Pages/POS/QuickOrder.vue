@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { usePage, Link, router, Head } from '@inertiajs/vue3';
+import axios from 'axios';
 import { route } from 'ziggy-js';
 import { useCartStore } from '@/Stores/cartStore';
 import type { QuickOrderPageProps, Product, PaymentData } from '@/Types/pos';
@@ -32,6 +33,8 @@ import QrisModal from '@/Components/POS/QrisModal.vue';
 import SplitBillModal from '@/Components/POS/SplitBillModal.vue';
 import MergeTabModal from '@/Components/POS/MergeTabModal.vue';
 import TransferTabModal from '@/Components/POS/TransferTabModal.vue';
+import OpenShiftModal from '@/Components/POS/OpenShiftModal.vue';
+import CloseShiftModal from '@/Components/POS/CloseShiftModal.vue';
 
 const page = usePage<QuickOrderPageProps>();
 const cartStore = useCartStore();
@@ -43,6 +46,42 @@ const tables = computed(() => page.props.tables ?? []);
 const activeTabs = computed(() => page.props.activeTabs ?? []);
 const currentShift = computed(() => page.props.currentShift);
 const currentUser = computed(() => page.props.auth?.user);
+const shiftDefinitions = computed(() => page.props.shiftDefinitions ?? []);
+
+// Shift Modals State
+const showOpenShiftModal = ref<boolean>(false);
+const showCloseShiftModal = ref<boolean>(false);
+
+const handleRequestPayment = () => {
+  if (!currentShift.value || currentShift.value.status !== 'opened') {
+    showOpenShiftModal.value = true;
+    showNotification('Harap buka shift kasir terlebih dahulu', 'warning');
+    return;
+  }
+  cartStore.openPaymentModal();
+};
+
+const handleOpenShift = async (payload: { opening_cash: number; shift_definition_id?: number; notes?: string }) => {
+  try {
+    const res = await axios.post(route('pos.shift.open'), payload);
+    showOpenShiftModal.value = false;
+    showNotification(res.data.message || 'Shift kasir berhasil dibuka', 'success');
+    router.reload({ only: ['currentShift'] });
+  } catch (err: any) {
+    showNotification(err.response?.data?.message || 'Gagal membuka shift', 'error');
+  }
+};
+
+const handleCloseShift = async (payload: { actual_cash: number; variance_notes?: string }) => {
+  try {
+    const res = await axios.post(route('pos.shift.close'), payload);
+    showCloseShiftModal.value = false;
+    showNotification(res.data.message || 'Shift kasir berhasil ditutup', 'success');
+    router.reload({ only: ['currentShift'] });
+  } catch (err: any) {
+    showNotification(err.response?.data?.message || 'Gagal menutup shift', 'error');
+  }
+};
 
 // Digital Clock
 const currentTime = ref('');
@@ -126,7 +165,12 @@ const handleLoadTab = (tabId: number | string | null) => {
   }
 };
 
-const handleSaveTab = () => {
+const handleSaveTab = async () => {
+  if (!currentShift.value || currentShift.value.status !== 'opened') {
+    showOpenShiftModal.value = true;
+    showNotification('Harap buka shift kasir terlebih dahulu', 'warning');
+    return;
+  }
   if (cartStore.isEmpty) {
     showNotification('Keranjang masih kosong', 'warning');
     return;
@@ -136,113 +180,124 @@ const handleSaveTab = () => {
     return;
   }
 
-  router.post(
-    route('pos.tab.save'),
-    {
+  try {
+    const res = await axios.post(route('pos.tab.save'), {
       cart: cartStore.items,
       order_type: cartStore.orderType,
       table_id: cartStore.selectedTableId,
       customer_name: cartStore.customerName,
       tab_id: cartStore.tabId,
       notes: cartStore.notes,
-    },
-    {
-      preserveState: true,
-      onSuccess: () => {
-        cartStore.clearCart();
-        showNotification('Tab berhasil disimpan', 'success');
-      },
-      onError: () => showNotification('Gagal menyimpan tab', 'error'),
+    });
+
+    if (res.data.success) {
+      cartStore.clearCart();
+      showNotification(res.data.message || 'Tab berhasil disimpan', 'success');
+      router.reload({ only: ['activeTabs', 'tables'] });
+    } else {
+      showNotification(res.data.message || 'Gagal menyimpan tab', 'error');
     }
-  );
+  } catch (err: any) {
+    showNotification(err.response?.data?.message || 'Gagal menyimpan tab', 'error');
+  }
 };
 
-const handleProcessPayment = (paymentData: PaymentData) => {
-  router.post(
-    route('pos.order.process'),
-    {
+const handleProcessPayment = async (paymentData: PaymentData) => {
+  try {
+    const res = await axios.post(route('pos.order.process'), {
       cart: cartStore.items,
       order_type: cartStore.orderType,
       table_id: cartStore.selectedTableId,
       customer_name: cartStore.customerName,
       tab_id: cartStore.tabId,
       payment: paymentData,
-    },
-    {
-      preserveState: true,
-      onSuccess: (page: any) => {
-        cartStore.closePaymentModal();
-        if (page.props?.qris_data) {
-          cartStore.openQrisModal(page.props.qris_data);
-        } else {
-          cartStore.clearCart();
-          showNotification('Pesanan berhasil dibayar dan diproses', 'success');
-        }
-      },
-      onError: () => showNotification('Gagal memproses pembayaran', 'error'),
+    });
+
+    cartStore.closePaymentModal();
+
+    if (res.data.qris_data) {
+      cartStore.openQrisModal(res.data.qris_data);
+    } else if (res.data.success) {
+      cartStore.clearCart();
+      showNotification(res.data.message || 'Pesanan berhasil dibayar dan diproses', 'success');
+      router.reload({ only: ['activeTabs', 'tables', 'currentShift'] });
+    } else {
+      showNotification(res.data.message || 'Gagal memproses pembayaran', 'error');
     }
-  );
+  } catch (err: any) {
+    showNotification(err.response?.data?.message || 'Gagal memproses pembayaran', 'error');
+  }
 };
 
-const handleCheckQrisStatus = () => {
+const handleCheckQrisStatus = async () => {
   if (!cartStore.qrisPaymentNumber) return;
-  router.post(route('pos.payment.check-qris', cartStore.qrisPaymentNumber), {}, {
-    onSuccess: (page: any) => {
-      if (page.props?.payment_status === 'paid') {
-        cartStore.clearCart();
-        cartStore.closeQrisModal();
-        showNotification('Pembayaran QRIS berhasil dikonfirmasi', 'success');
-      } else {
-        showNotification('Menunggu pembayaran pelanggan...', 'info');
-      }
-    },
-    onError: () => showNotification('Gagal memeriksa status QRIS', 'error'),
-  });
+  try {
+    const res = await axios.post(route('pos.payment.check-qris', cartStore.qrisPaymentNumber));
+    if (res.data.payment_status === 'paid') {
+      cartStore.clearCart();
+      cartStore.closeQrisModal();
+      showNotification('Pembayaran QRIS berhasil dikonfirmasi', 'success');
+      router.reload({ only: ['activeTabs', 'tables', 'currentShift'] });
+    } else if (res.data.payment_status === 'expired') {
+      cartStore.closeQrisModal();
+      showNotification('Waktu pembayaran QRIS telah kedaluwarsa', 'warning');
+      router.reload({ only: ['activeTabs', 'tables'] });
+    } else {
+      showNotification('Menunggu pembayaran pelanggan...', 'info');
+    }
+  } catch (err: any) {
+    showNotification(err.response?.data?.message || 'Gagal memeriksa status QRIS', 'error');
+  }
 };
 
-const handleCancelQris = () => {
+const handleCancelQris = async () => {
   if (!cartStore.qrisPaymentNumber) {
     cartStore.closeQrisModal();
     return;
   }
-  router.post(route('pos.payment.cancel-qris', cartStore.qrisPaymentNumber), {}, {
-    onSuccess: () => {
-      cartStore.closeQrisModal();
-      showNotification('Pembayaran QRIS dibatalkan', 'info');
-    },
-  });
+  try {
+    await axios.post(route('pos.payment.cancel-qris', cartStore.qrisPaymentNumber));
+    cartStore.closeQrisModal();
+    showNotification('Pembayaran QRIS dibatalkan', 'info');
+    router.reload({ only: ['activeTabs', 'tables'] });
+  } catch (err: any) {
+    cartStore.closeQrisModal();
+  }
 };
 
-const handleProcessSplitBill = (splitData: any) => {
+const handleProcessSplitBill = async (splitData: any) => {
   if (!cartStore.splitBillTabId) return;
-  router.post(route('pos.tab.split', cartStore.splitBillTabId), splitData, {
-    onSuccess: () => {
-      cartStore.closeSplitBillModal();
-      showNotification('Bill berhasil dipecah ke tab baru', 'success');
-    },
-    onError: () => showNotification('Gagal memecah bill', 'error'),
-  });
+  try {
+    const res = await axios.post(route('pos.tab.split', cartStore.splitBillTabId), splitData);
+    cartStore.closeSplitBillModal();
+    showNotification(res.data.message || 'Bill berhasil dipecah ke tab baru', 'success');
+    router.reload({ only: ['activeTabs', 'tables'] });
+  } catch (err: any) {
+    showNotification(err.response?.data?.message || 'Gagal memecah bill', 'error');
+  }
 };
 
-const handleProcessMergeTab = (payload: { source_id: number; target_id: number }) => {
-  router.post(route('pos.tab.merge'), payload, {
-    onSuccess: () => {
-      cartStore.closeMergeTabModal();
-      showNotification('Tab berhasil digabungkan', 'success');
-    },
-    onError: () => showNotification('Gagal menggabungkan tab', 'error'),
-  });
+const handleProcessMergeTab = async (payload: { source_id: number; target_id: number }) => {
+  try {
+    const res = await axios.post(route('pos.tab.merge'), payload);
+    cartStore.closeMergeTabModal();
+    showNotification(res.data.message || 'Tab berhasil digabungkan', 'success');
+    router.reload({ only: ['activeTabs', 'tables'] });
+  } catch (err: any) {
+    showNotification(err.response?.data?.message || 'Gagal menggabungkan tab', 'error');
+  }
 };
 
-const handleProcessTransferTab = (payload: { table_id: number | null; customer_name: string }) => {
+const handleProcessTransferTab = async (payload: { table_id: number | null; customer_name: string }) => {
   if (!cartStore.transferTabId) return;
-  router.post(route('pos.tab.transfer', cartStore.transferTabId), payload, {
-    onSuccess: () => {
-      cartStore.closeTransferTabModal();
-      showNotification('Tab berhasil dipindahkan ke meja baru', 'success');
-    },
-    onError: () => showNotification('Gagal memindahkan tab', 'error'),
-  });
+  try {
+    const res = await axios.post(route('pos.tab.transfer', cartStore.transferTabId), payload);
+    cartStore.closeTransferTabModal();
+    showNotification(res.data.message || 'Tab berhasil dipindahkan ke meja baru', 'success');
+    router.reload({ only: ['activeTabs', 'tables'] });
+  } catch (err: any) {
+    showNotification(err.response?.data?.message || 'Gagal memindahkan tab', 'error');
+  }
 };
 
 const handleConfirmAddToCart = () => {
@@ -260,12 +315,14 @@ const handleKeydown = (e: KeyboardEvent) => {
   if (e.key === 'F9') {
     e.preventDefault();
     if (!cartStore.isEmpty) {
-      cartStore.openPaymentModal();
+      handleRequestPayment();
     }
   }
 
   // Escape = Close modals
   if (e.key === 'Escape') {
+    if (showOpenShiftModal.value) showOpenShiftModal.value = false;
+    if (showCloseShiftModal.value) showCloseShiftModal.value = false;
     if (cartStore.showPaymentModal) cartStore.closePaymentModal();
     if (cartStore.showModifierModal) cartStore.closeModifierModal();
     if (cartStore.showQrisModal) cartStore.closeQrisModal();
@@ -276,6 +333,9 @@ const handleKeydown = (e: KeyboardEvent) => {
 };
 
 onMounted(() => {
+  if (page.props.outletSettings) {
+    cartStore.setOutletSettings(page.props.outletSettings);
+  }
   updateClock();
   clockInterval = setInterval(updateClock, 1000);
   window.addEventListener('keydown', handleKeydown);
@@ -340,10 +400,32 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <!-- Shift Indicator Badge -->
-        <div class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-semibold">
-          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-          <span>Shift Aktif #{{ currentShift?.id || '1' }}</span>
+        <!-- Shift Status & Actions -->
+        <div v-if="currentShift && currentShift.status === 'opened'" class="hidden sm:flex items-center gap-2">
+          <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-semibold">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>Shift Aktif #{{ currentShift.id }}</span>
+          </div>
+          <button
+            type="button"
+            @click="showCloseShiftModal = true"
+            class="px-2.5 py-1 text-[11px] font-bold text-stone-700 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 rounded-lg transition"
+          >
+            Tutup Shift
+          </button>
+        </div>
+        <div v-else class="hidden sm:flex items-center gap-2">
+          <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-300 text-amber-900 text-[11px] font-semibold">
+            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+            <span>Shift Belum Buka</span>
+          </div>
+          <button
+            type="button"
+            @click="showOpenShiftModal = true"
+            class="px-3 py-1 text-[11px] font-bold text-white bg-[#8B6B3D] hover:bg-[#73552C] rounded-lg shadow-xs transition"
+          >
+            Buka Shift
+          </button>
         </div>
       </div>
 
@@ -635,7 +717,7 @@ onUnmounted(() => {
           @remove-item="cartStore.removeItem"
           @clear-cart="cartStore.clearCart"
           @save-tab="handleSaveTab"
-          @open-payment="cartStore.openPaymentModal"
+          @open-payment="handleRequestPayment"
         />
       </aside>
     </main>
@@ -725,6 +807,20 @@ onUnmounted(() => {
       @update:transfer-tab-new-table-id="cartStore.transferTabNewTableId = $event"
       @update:transfer-tab-new-customer-name="cartStore.transferTabNewCustomerName = $event"
       @process="handleProcessTransferTab"
+    />
+
+    <OpenShiftModal
+      v-if="showOpenShiftModal"
+      :shift-definitions="shiftDefinitions"
+      @close="showOpenShiftModal = false"
+      @submit="handleOpenShift"
+    />
+
+    <CloseShiftModal
+      v-if="showCloseShiftModal && currentShift"
+      :shift="currentShift"
+      @close="showCloseShiftModal = false"
+      @submit="handleCloseShift"
     />
   </div>
 </template>
