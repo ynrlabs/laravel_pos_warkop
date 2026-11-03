@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <rect width="64" height="64" rx="16" fill="#1C1917"/>
+  <rect x="2" y="2" width="60" height="60" rx="14" stroke="#D97706" stroke-width="2" stroke-opacity="0.5"/>
+  <!-- Admin Shield & Control Sliders -->
+  <path d="M32 12L46 17.5V28C46 37.5 39.8 46.2 32 49C24.2 46.2 18 37.5 18 28V17.5L32 12Z" fill="#78350F" stroke="#F59E0B" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M26 29H38M32 23V35M28 35H36" stroke="#FEF3C7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

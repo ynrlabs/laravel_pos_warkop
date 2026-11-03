@@ -29,6 +29,8 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->brandName('Warkop POS Admin')
+            ->favicon(asset('favicon-admin.svg'))
             ->renderHook(
                 PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE,
                 fn () => view('filament.auth.login-hint')
@@ -46,7 +48,7 @@ class AdminPanelProvider extends PanelProvider
             ->navigationItems([
                 NavigationItem::make('Buka POS')
                     ->url('/pos', shouldOpenInNewTab: true)
-                    ->icon('heroicon-o-shopping-cart')
+                    ->icon('heroicon-o-computer-desktop')
                     ->group('POS')
                     ->sort(1),
                 NavigationItem::make('Shift Management')

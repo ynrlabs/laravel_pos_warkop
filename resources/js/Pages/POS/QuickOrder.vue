@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { usePage, Link, router } from '@inertiajs/vue3';
+import { usePage, Link, router, Head } from '@inertiajs/vue3';
 import { route } from 'ziggy-js';
 import { useCartStore } from '@/Stores/cartStore';
 import type { QuickOrderPageProps, Product, PaymentData } from '@/Types/pos';
@@ -293,6 +293,7 @@ onUnmounted(() => {
 </script>
 
 <template>
+  <Head title="POS Kasir" />
   <div class="h-screen w-screen flex flex-col bg-[#F5F0EB] text-[#2F2212] overflow-hidden select-none">
     <!-- Notification Toast -->
     <Teleport to="body">
