@@ -1,58 +1,219 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Warkop POS
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Point of Sale (POS) and Back-Office Management System designed specifically for Indonesian modern coffee shops ("warung kopi").
 
-## About Laravel
+Built on a hybrid architecture combining a high-performance, zero-latency client-side frontend for cashier operations with a robust administration panel for inventory, recipe costing, shift controls, and reporting.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Architecture Overview
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Cashier POS Interface (`/pos`)**:
+  - Powered by **Inertia.js**, **Vue 3**, **TypeScript**, and **Pinia**.
+  - Local state management eliminates network roundtrips during cart manipulation, item additions, modifier selections, and price calculations.
+  - Ergonomic touch targets (48px - 56px) optimized for high-velocity tablet and touchscreen counter environments.
+  - Styled with **Tailwind CSS v4** and typed with strict TypeScript definitions.
+- **Admin & Back-Office (`/admin`)**:
+  - Powered by **FilamentPHP**.
+  - Comprehensive resource management: products, categories, recipes, ingredients, purchase orders, stock opname, waste logs, and sales reports.
+- **Backend Core**:
+  - **Laravel 11** with MySQL 8.0+.
+  - Real-time event broadcasting support via **Laravel Reverb** for Kitchen Display System (KDS) stations (Barista and Kitchen).
+  - Multi-method payment handling (Cash, Dynamic QRIS, E-Wallet, Card, and Split Bill).
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Key Features
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 1. Point of Sale (POS)
+- **Order Modes**: Dine In (table allocation) and Take Away.
+- **Table & Open Tab Management**:
+  - Open Tab tracking for ongoing dine-in orders.
+  - **Split Bill**: Split items into a new tab/table with custom quantities.
+  - **Merge Tab**: Combine two active customer tabs into one.
+  - **Transfer Table**: Relocate active orders to available tables.
+- **Product Customization**:
+  - Multiple size/type variants with dynamic price adjustments.
+  - Single-choice and multiple-choice modifiers (Sugar levels, Ice levels, Spice levels).
+  - Paid add-ons and toppings with quantity steppers.
+  - Item-level special cooking notes.
+- **Payment Processing**:
+  - Cash payment with quick-cash suggestion buttons and automatic change calculation.
+  - Dynamic QRIS presentation with countdown timer and status checking.
+  - Multi-tender Split Payment (combine Cash, QRIS, E-Wallet, and Card in one transaction).
+  - Automatic tax (PB1 11%), service charge (5%), and rounding rules (nearest Rp 100).
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+### 2. Back-Office Management
+- **Product & Category Catalog**: Full finished-goods and raw-materials catalog with variants, modifiers, and toppings configuration.
+- **Inventory & Recipe Costing**:
+  - Multi-unit measurement system (weight, volume, count) with base conversion.
+  - Ingredient recipes linked to menu items for automated stock deduction and Cost of Goods Sold (COGS).
+  - Stock Opname and Waste Logging.
+  - Supplier management and Purchase Orders (PO).
+- **Shift & Cash Drawer Management**:
+  - Shift opening with initial drawer cash.
+  - Real-time tracking of cash sales, non-cash sales, and transaction count.
+  - Shift closing summary with actual drawer counting and variance audit logs.
+- **Sales & Performance Reporting**: Daily/periodic revenue, payment mix breakdown, and cashier audit logs.
 
-## Agentic Development
+---
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Tech Stack
 
+- **Backend**: Laravel 11, PHP 8.3+
+- **Admin Panel**: FilamentPHP v3 / v5
+- **POS Frontend**: Vue 3 (Composition API, `<script setup lang="ts">`), TypeScript 6, Inertia.js
+- **State Management**: Pinia
+- **Styling**: Tailwind CSS v4
+- **Icons**: Lucide Vue (`lucide-vue-next`)
+- **Database**: MySQL 8.0+
+- **Real-time WebSockets**: Laravel Reverb
+- **Build Tool**: Vite 8
+
+---
+
+## System Requirements
+
+- PHP 8.3 or higher
+- Composer 2.x
+- Node.js 18.x or higher and npm
+- MySQL 8.0 or MariaDB 10.5+
+- PHP Extensions: `bcmath`, `ctype`, `curl`, `dom`, `fileinfo`, `json`, `mbstring`, `openssl`, `pdo_mysql`, `tokenizer`, `xml`
+
+---
+
+## Installation & Setup
+
+### 1. Clone Repository
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+git clone https://github.com/your-username/laravel_pos_warkop.git
+cd laravel_pos_warkop
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+### 2. Install Dependencies
+```bash
+composer install
+npm install
+```
 
-## Contributing
+### 3. Environment Configuration
+Copy `.env.example` to `.env`:
+```bash
+cp .env.example .env
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Configure your database and app settings in `.env`:
+```ini
+APP_NAME="Warkop POS"
+APP_ENV=local
+APP_KEY=
+APP_DEBUG=true
+APP_URL=http://localhost:8000
 
-## Code of Conduct
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=db_pos_warkop
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Generate the application encryption key:
+```bash
+php artisan key:generate
+```
 
-## Security Vulnerabilities
+### 4. Database Migration & Seeding
+Run migrations and populate default catalog, outlets, units, roles, permissions, and sample users:
+```bash
+php artisan migrate --seed
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### 5. Build Frontend Assets
+For local development with hot module replacement:
+```bash
+npm run dev
+```
+
+For production build:
+```bash
+npm run build
+```
+
+To run TypeScript verification across all Vue components and stores:
+```bash
+npm run typecheck
+```
+
+### 6. Run the Application
+Start the Laravel local server:
+```bash
+php artisan serve
+```
+
+Access the application:
+- **Cashier POS Interface**: [http://localhost:8000/pos](http://localhost:8000/pos)
+- **Admin Back-Office**: [http://localhost:8000/admin](http://localhost:8000/admin)
+
+---
+
+## Default Development Accounts
+
+All default seeded accounts use the password: `password123` and PIN: `123456`.
+
+| Role | Email / Username | Default PIN | Access Scope |
+| --- | --- | --- | --- |
+| Super Admin | `superadmin@warkop.com` | `123456` | Full system access, settings, admin panel, POS |
+| Manager | `manager@warkop.com` | `123456` | Store reports, stock opname, shifts, POS |
+| Kasir 1 | `kasir1@warkop.com` | `123456` | POS terminal, open tab, shift operations |
+| Barista 1 | `barista1@warkop.com` | `123456` | KDS Barista station |
+| Koki 1 | `koki1@warkop.com` | `123456` | KDS Kitchen station |
+| Gudang 1 | `gudang@warkop.com` | `123456` | Inventory and stock opname |
+
+Note: In local development (`APP_ENV=local`), a one-click credential auto-fill widget is displayed on the login page for quick testing.
+
+---
+
+## Project Structure
+
+```text
+├── app/
+│   ├── Filament/Admin/         # Filament Admin Panel resources & pages
+│   ├── Http/
+│   │   ├── Controllers/POS/    # POS Quick Order and checkout controller
+│   │   └── Middleware/         # Inertia share data and auth redirection
+│   ├── Models/                 # Eloquent models (Order, Product, Shift, Tab, etc.)
+│   ├── Providers/Filament/     # Admin panel service provider
+│   └── Services/               # Business logic & payment gateways
+├── database/
+│   ├── migrations/             # Schema definitions
+│   └── seeders/                # Default catalog, roles, and sample data
+├── resources/
+│   ├── css/                    # Tailwind CSS v4 entry
+│   ├── js/
+│   │   ├── Components/POS/     # Vue 3 POS components (MenuGrid, CartPanel, Modals)
+│   │   ├── Pages/POS/          # Inertia pages (QuickOrder.vue)
+│   │   ├── Stores/             # Pinia store (cartStore.ts)
+│   │   ├── Types/              # TypeScript interfaces (pos.ts)
+│   │   └── app.ts              # Inertia client entry point
+│   └── views/                  # Blade templates (Inertia root, receipts)
+├── routes/
+│   ├── web.php                 # POS and webhook routes
+│   └── console.php             # Artisan console commands
+└── tsconfig.json               # TypeScript compiler configuration
+```
+
+---
+
+## Keyboard Shortcuts (POS)
+
+| Key | Action |
+| --- | --- |
+| `F9` | Open Payment Modal |
+| `Esc` | Close any active modal dialog |
+
+---
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This project is open-source software licensed under the [MIT License](LICENSE).

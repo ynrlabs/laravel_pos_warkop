@@ -33,10 +33,17 @@ Route::prefix('payment')->group(function () {
         ->name('payment.xendit.return');
 });
 
+Route::post('logout', function (\Illuminate\Http\Request $request) {
+    auth()->logout();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+    return redirect('/admin/login');
+})->name('logout');
+
 // POS Routes (Inertia.js)
-Route::prefix('pos')->group(function () {
+Route::middleware(['auth'])->prefix('pos')->group(function () {
     // Quick Order (Inertia POS)
-    Route::get('inertia-quick-order', [QuickOrderController::class, 'index'])->name('pos.quick-order');
+    Route::get('/', [QuickOrderController::class, 'index'])->name('pos.quick-order');
     Route::post('order/process', [QuickOrderController::class, 'processOrder'])->name('pos.order.process');
     
     // Tab Management

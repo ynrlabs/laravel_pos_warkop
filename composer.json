@@ -19,6 +19,7 @@
         "predis/predis": "*",
         "spatie/laravel-activitylog": "^4.12",
         "spatie/laravel-permission": "^8.3",
+        "tightenco/ziggy": "*",
         "xendit/xendit-php": "^7.0"
     },
     "require-dev": {

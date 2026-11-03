@@ -1,7 +1,27 @@
-<script setup>
-import { onMounted, onUnmounted, ref, computed, watch } from 'vue';
-import { usePage, useForm } from '@inertiajs/vue3';
+<script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { usePage, Link, router } from '@inertiajs/vue3';
+import { route } from 'ziggy-js';
 import { useCartStore } from '@/Stores/cartStore';
+import type { QuickOrderPageProps, Product, PaymentData } from '@/Types/pos';
+
+// Icons
+import {
+  Coffee,
+  Search,
+  X,
+  Layers,
+  Table2,
+  Bookmark,
+  ExternalLink,
+  LogOut,
+  Clock,
+  User as UserIcon,
+  CheckCircle2,
+  AlertTriangle,
+  XCircle,
+  Info,
+} from 'lucide-vue-next';
 
 // Components
 import MenuGrid from '@/Components/POS/MenuGrid.vue';
@@ -13,68 +33,77 @@ import SplitBillModal from '@/Components/POS/SplitBillModal.vue';
 import MergeTabModal from '@/Components/POS/MergeTabModal.vue';
 import TransferTabModal from '@/Components/POS/TransferTabModal.vue';
 
-const page = usePage();
+const page = usePage<QuickOrderPageProps>();
 const cartStore = useCartStore();
-const form = useForm({});
 
-// Notifications state
-const notification = ref(null);
-const showNotification = (message, type = 'info') => {
+// Props destructuring with safe fallbacks
+const categories = computed(() => page.props.categories ?? []);
+const products = computed<Product[]>(() => page.props.products ?? []);
+const tables = computed(() => page.props.tables ?? []);
+const activeTabs = computed(() => page.props.activeTabs ?? []);
+const currentShift = computed(() => page.props.currentShift);
+const currentUser = computed(() => page.props.auth?.user);
+
+// Digital Clock
+const currentTime = ref('');
+const updateClock = () => {
+  const d = new Date();
+  currentTime.value = d.toLocaleTimeString('id-ID', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  });
+};
+let clockInterval: ReturnType<typeof setInterval> | null = null;
+
+// Notification state
+interface Notification {
+  message: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+}
+const notification = ref<Notification | null>(null);
+const showNotification = (message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') => {
   notification.value = { message, type };
-  setTimeout(() => { notification.value = null; }, 3000);
+  setTimeout(() => {
+    notification.value = null;
+  }, 3500);
 };
 
-// Search
-const searchQuery = ref(page.props?.url?.includes('search=') ? '' : '');
-let searchTimeout = null;
+// Search & Filter
+const searchQuery = ref('');
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+const selectedCategory = ref<number | null>(null);
 
 const debouncedSearch = () => {
   if (searchTimeout) clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
-    form.get(route('pos.quick-order'), { search: searchQuery.value }, {
-      preserveState: true,
-      preserveScroll: true,
-    });
+    applyFilter();
   }, 300);
 };
 
-// Keyboard shortcuts
-const handleKeydown = (e) => {
-  // Space = Toggle dine-in/takeaway
-  if (e.code === 'Space' && e.target === document.body) {
-    e.preventDefault();
-    cartStore.setOrderType(cartStore.orderType === 'dine_in' ? 'takeaway' : 'dine_in');
-  }
-  
-  // Escape = Close modals
-  if (e.key === 'Escape') {
-    cartStore.closePaymentModal();
-    cartStore.closeModifierModal();
-    cartStore.closeQrisModal();
-    cartStore.closeSplitBillModal();
-    cartStore.closeMergeTabModal();
-    cartStore.closeTransferTabModal();
-  }
+const handleSelectCategory = (categoryId: number | null) => {
+  selectedCategory.value = categoryId;
+  applyFilter();
 };
 
-onMounted(() => {
-  document.addEventListener('keydown', handleKeydown);
-  document.body.classList.add('overflow-hidden');
-});
+const applyFilter = () => {
+  const params: Record<string, any> = {};
+  if (searchQuery.value) params.search = searchQuery.value;
+  if (selectedCategory.value) params.category = selectedCategory.value;
 
-onUnmounted(() => {
-  document.removeEventListener('keydown', handleKeydown);
-  document.body.classList.remove('overflow-hidden');
-});
+  router.get(route('pos.quick-order'), params, {
+    preserveState: true,
+    preserveScroll: true,
+  });
+};
 
-// Computed from page props
-const categories = computed(() => page.props.categories || []);
-const products = computed(() => page.props.products || []);
-const tables = computed(() => page.props.tables || []);
-const activeTabs = computed(() => page.props.activeTabs || []);
+const clearSearch = () => {
+  searchQuery.value = '';
+  applyFilter();
+};
 
-// Format currency utility
-const formatCurrency = (amount) => {
+// Currency helper
+const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat('id-ID', {
     style: 'currency',
     currency: 'IDR',
@@ -83,122 +112,91 @@ const formatCurrency = (amount) => {
   }).format(amount).replace('Rp', 'Rp ');
 };
 
-// Theme toggle
-const toggleTheme = () => {
-  const isDark = document.documentElement.classList.contains('dark');
-  if (isDark) {
-    localStorage.setItem('theme', 'light');
-    document.documentElement.classList.remove('dark');
-  } else {
-    localStorage.setItem('theme', 'dark');
-    document.documentElement.classList.add('dark');
-  }
-};
-
-// Initialize theme on mount
-onMounted(() => {
-  const savedTheme = localStorage.getItem('theme');
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-    document.documentElement.classList.add('dark');
-  }
-});
-
-// Actions
-const handleAddToCart = (product) => {
+// Handlers
+const handleAddToCart = (product: Product) => {
   cartStore.addItem(product);
 };
 
-const handleSelectCategory = (categoryId) => {
-  form.get(route('pos.quick-order'), { category: categoryId }, {
-    preserveState: true,
-    preserveScroll: true,
-  });
-};
-
-const handleLoadTab = (tabId) => {
+const handleLoadTab = (tabId: number | string | null) => {
   if (!tabId) return;
-  
-  form.post(route('pos.tab.load', tabId), {
-    preserveState: true,
-    onSuccess: (page) => {
-      if (page.props?.tab) {
-        cartStore.loadTab(page.props.tab);
-        showNotification('Tab dimuat ke keranjang!', 'success');
-      }
-    },
-    onError: () => showNotification('Gagal memuat tab', 'error'),
-  });
+  const tab = activeTabs.value.find((t) => t.id === Number(tabId));
+  if (tab) {
+    cartStore.loadTab(tab);
+    showNotification(`Tab meja ${tab.table?.number || ''} dimuat`, 'info');
+  }
 };
 
 const handleSaveTab = () => {
   if (cartStore.isEmpty) {
-    showNotification('Keranjang kosong!', 'warning');
+    showNotification('Keranjang masih kosong', 'warning');
     return;
   }
-  
-  if (!cartStore.customerName && !cartStore.selectedTableId) {
-    showNotification('Isi nama pelanggan atau pilih meja!', 'warning');
+  if (cartStore.orderType === 'dine_in' && !cartStore.selectedTableId) {
+    showNotification('Pilih meja terlebih dahulu untuk menyimpan tab', 'warning');
     return;
   }
-  
-  form.post(route('pos.tab.save'), {
-    cart: cartStore.items,
-    order_type: cartStore.orderType,
-    table_id: cartStore.selectedTableId,
-    customer_name: cartStore.customerName,
-  }, {
-    preserveState: true,
-    onSuccess: () => {
-      cartStore.clearCart();
-      showNotification('Tab berhasil disimpan!', 'success');
+
+  router.post(
+    route('pos.tab.save'),
+    {
+      cart: cartStore.items,
+      order_type: cartStore.orderType,
+      table_id: cartStore.selectedTableId,
+      customer_name: cartStore.customerName,
+      tab_id: cartStore.tabId,
+      notes: cartStore.notes,
     },
-    onError: () => showNotification('Gagal menyimpan tab', 'error'),
-  });
-};
-
-const handleClearCart = () => {
-  cartStore.clearCart();
-};
-
-const handleProcessPayment = (paymentData) => {
-  form.post(route('pos.order.process'), {
-    cart: cartStore.items,
-    order_type: cartStore.orderType,
-    table_id: cartStore.selectedTableId,
-    customer_name: cartStore.customerName,
-    tab_id: cartStore.tabId,
-    payment: paymentData,
-  }, {
-    preserveState: true,
-    onSuccess: (page) => {
-      if (page.props?.qris_data) {
-        cartStore.openQrisModal(page.props.qris_data);
-      } else {
+    {
+      preserveState: true,
+      onSuccess: () => {
         cartStore.clearCart();
-        cartStore.selectedTableId = null;
-        cartStore.tabId = null;
-        cartStore.customerName = '';
-        cartStore.setOrderType('dine_in');
-        showNotification('Pesanan berhasil diproses!', 'success');
-      }
+        showNotification('Tab berhasil disimpan', 'success');
+      },
+      onError: () => showNotification('Gagal menyimpan tab', 'error'),
+    }
+  );
+};
+
+const handleProcessPayment = (paymentData: PaymentData) => {
+  router.post(
+    route('pos.order.process'),
+    {
+      cart: cartStore.items,
+      order_type: cartStore.orderType,
+      table_id: cartStore.selectedTableId,
+      customer_name: cartStore.customerName,
+      tab_id: cartStore.tabId,
+      payment: paymentData,
     },
-    onError: () => showNotification('Gagal memproses pesanan', 'error'),
-  });
+    {
+      preserveState: true,
+      onSuccess: (page: any) => {
+        cartStore.closePaymentModal();
+        if (page.props?.qris_data) {
+          cartStore.openQrisModal(page.props.qris_data);
+        } else {
+          cartStore.clearCart();
+          showNotification('Pesanan berhasil dibayar dan diproses', 'success');
+        }
+      },
+      onError: () => showNotification('Gagal memproses pembayaran', 'error'),
+    }
+  );
 };
 
 const handleCheckQrisStatus = () => {
   if (!cartStore.qrisPaymentNumber) return;
-  
-  form.post(route('pos.payment.check-qris', cartStore.qrisPaymentNumber), {
-    onSuccess: (page) => {
+  router.post(route('pos.payment.check-qris', cartStore.qrisPaymentNumber), {}, {
+    onSuccess: (page: any) => {
       if (page.props?.payment_status === 'paid') {
         cartStore.clearCart();
         cartStore.closeQrisModal();
-        showNotification('Pembayaran QRIS berhasil!', 'success');
+        showNotification('Pembayaran QRIS berhasil dikonfirmasi', 'success');
+      } else {
+        showNotification('Menunggu pembayaran pelanggan...', 'info');
       }
     },
-    onError: () => showNotification('Gagal cek status pembayaran', 'error'),
+    onError: () => showNotification('Gagal memeriksa status QRIS', 'error'),
   });
 };
 
@@ -207,8 +205,7 @@ const handleCancelQris = () => {
     cartStore.closeQrisModal();
     return;
   }
-  
-  form.post(route('pos.payment.cancel-qris', cartStore.qrisPaymentNumber), {
+  router.post(route('pos.payment.cancel-qris', cartStore.qrisPaymentNumber), {}, {
     onSuccess: () => {
       cartStore.closeQrisModal();
       showNotification('Pembayaran QRIS dibatalkan', 'info');
@@ -216,248 +213,409 @@ const handleCancelQris = () => {
   });
 };
 
-const handleProcessSplitBill = (splitData) => {
-  form.post(route('pos.tab.split', cartStore.splitBillTabId), splitData, {
+const handleProcessSplitBill = (splitData: any) => {
+  if (!cartStore.splitBillTabId) return;
+  router.post(route('pos.tab.split', cartStore.splitBillTabId), splitData, {
     onSuccess: () => {
       cartStore.closeSplitBillModal();
-      showNotification('Bill berhasil dipecah!', 'success');
+      showNotification('Bill berhasil dipecah ke tab baru', 'success');
     },
     onError: () => showNotification('Gagal memecah bill', 'error'),
   });
 };
 
-const handleProcessMergeTab = () => {
-  if (!cartStore.mergeTabSourceId || !cartStore.mergeTabTargetId) {
-    showNotification('Pilih tab sumber dan tujuan!', 'warning');
-    return;
-  }
-  
-  if (cartStore.mergeTabSourceId === cartStore.mergeTabTargetId) {
-    showNotification('Tab sumber dan tujuan tidak boleh sama!', 'warning');
-    return;
-  }
-  
-  form.post(route('pos.tab.merge'), {
-    source_id: cartStore.mergeTabSourceId,
-    target_id: cartStore.mergeTabTargetId,
-  }, {
+const handleProcessMergeTab = (payload: { source_id: number; target_id: number }) => {
+  router.post(route('pos.tab.merge'), payload, {
     onSuccess: () => {
       cartStore.closeMergeTabModal();
-      showNotification('Tab berhasil digabung!', 'success');
+      showNotification('Tab berhasil digabungkan', 'success');
     },
     onError: () => showNotification('Gagal menggabungkan tab', 'error'),
   });
 };
 
-const handleProcessTransferTab = () => {
-  form.post(route('pos.tab.transfer', cartStore.transferTabId), {
-    table_id: cartStore.transferTabNewTableId,
-    customer_name: cartStore.transferTabNewCustomerName,
-  }, {
+const handleProcessTransferTab = (payload: { table_id: number | null; customer_name: string }) => {
+  if (!cartStore.transferTabId) return;
+  router.post(route('pos.tab.transfer', cartStore.transferTabId), payload, {
     onSuccess: () => {
       cartStore.closeTransferTabModal();
-      showNotification('Tab berhasil dipindah!', 'success');
+      showNotification('Tab berhasil dipindahkan ke meja baru', 'success');
     },
-    onError: () => showNotification('Gagal memindah tab', 'error'),
+    onError: () => showNotification('Gagal memindahkan tab', 'error'),
   });
 };
 
 const handleConfirmAddToCart = () => {
   cartStore.confirmAddToCart();
-  showNotification('Item ditambahkan ke keranjang', 'success');
+  showNotification('Item berhasil ditambahkan ke keranjang', 'success');
 };
 
-const handlePrintReceipt = (orderId) => {
-  form.post(route('pos.order.print', orderId), {
-    onError: () => showNotification('Gagal mencetak struk', 'error'),
-  });
+const handleLogout = () => {
+  router.post(route('logout'));
 };
+
+// Keyboard shortcuts
+const handleKeydown = (e: KeyboardEvent) => {
+  // F9 = Open payment
+  if (e.key === 'F9') {
+    e.preventDefault();
+    if (!cartStore.isEmpty) {
+      cartStore.openPaymentModal();
+    }
+  }
+
+  // Escape = Close modals
+  if (e.key === 'Escape') {
+    if (cartStore.showPaymentModal) cartStore.closePaymentModal();
+    if (cartStore.showModifierModal) cartStore.closeModifierModal();
+    if (cartStore.showQrisModal) cartStore.closeQrisModal();
+    if (cartStore.showSplitBillModal) cartStore.closeSplitBillModal();
+    if (cartStore.showMergeTabModal) cartStore.closeMergeTabModal();
+    if (cartStore.showTransferTabModal) cartStore.closeTransferTabModal();
+  }
+};
+
+onMounted(() => {
+  updateClock();
+  clockInterval = setInterval(updateClock, 1000);
+  window.addEventListener('keydown', handleKeydown);
+
+  // Sync initial query params
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.has('search')) searchQuery.value = urlParams.get('search')!;
+  if (urlParams.has('category')) selectedCategory.value = Number(urlParams.get('category'));
+});
+
+onUnmounted(() => {
+  if (clockInterval) clearInterval(clockInterval);
+  window.removeEventListener('keydown', handleKeydown);
+});
 </script>
 
 <template>
-  <div class="h-screen flex flex-col bg-[#F5F0EB] font-body-md text-on-surface">
+  <div class="h-screen w-screen flex flex-col bg-[#F5F0EB] text-[#2F2212] overflow-hidden select-none">
     <!-- Notification Toast -->
     <Teleport to="body">
-      <Transition name="toast-slide">
-        <div v-if="notification" 
+      <Transition
+        enter-active-class="transition duration-300 ease-out"
+        enter-from-class="transform translate-y-[-20px] opacity-0"
+        enter-to-class="transform translate-y-0 opacity-100"
+        leave-active-class="transition duration-200 ease-in"
+        leave-from-class="transform translate-y-0 opacity-100"
+        leave-to-class="transform translate-y-[-20px] opacity-0"
+      >
+        <div
+          v-if="notification"
           :class="[
-            'fixed top-4 right-4 z-[100] px-4 py-3 rounded-lg shadow-lg text-sm font-semibold transition-all duration-300',
-            notification.type === 'success' ? 'bg-green-600 text-white' :
-            notification.type === 'error' ? 'bg-red-600 text-white' :
-            notification.type === 'warning' ? 'bg-yellow-500 text-white' :
-            'bg-blue-600 text-white'
+            'fixed top-5 left-1/2 -translate-x-1/2 z-[100] px-4 py-2.5 rounded-xl shadow-xl text-xs font-bold flex items-center gap-2 border',
+            notification.type === 'success' ? 'bg-emerald-800 text-white border-emerald-700' :
+            notification.type === 'error' ? 'bg-rose-800 text-white border-rose-700' :
+            notification.type === 'warning' ? 'bg-amber-800 text-white border-amber-700' :
+            'bg-[#2F2212] text-white border-stone-800'
           ]"
         >
-          <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-[18px]">
-              {{ notification.type === 'success' ? 'check_circle' : 
-                 notification.type === 'error' ? 'error' : 
-                 notification.type === 'warning' ? 'warning' : 'info' }}
-            </span>
-            {{ notification.message }}
-          </div>
+          <component
+            :is="notification.type === 'success' ? CheckCircle2 :
+                 notification.type === 'error' ? XCircle :
+                 notification.type === 'warning' ? AlertTriangle : Info"
+            class="w-4 h-4 shrink-0"
+          />
+          <span>{{ notification.message }}</span>
         </div>
       </Transition>
     </Teleport>
 
-    <!-- Top Navigation -->
-    <header class="flex justify-between items-center w-full px-8 h-14 bg-white border-b border-gray-200 shadow-sm shrink-0 z-20">
+    <!-- Top Navigation Header -->
+    <header class="h-14 bg-white border-b border-[#E8E1D9] px-6 flex items-center justify-between shrink-0 shadow-xs z-20">
+      <!-- Brand & Outlet -->
       <div class="flex items-center gap-4">
-        <span class="font-bold text-[20px]" style="color: #8B6B3D;">Warkop POS</span>
-        <nav class="flex ml-4 gap-4">
-          <Link :href="route('pos.quick-order')" class="text-sm font-bold pb-2 border-b-2" style="color: #8B6B3D; border-color: #8B6B3D;">
-            POS Kasir
-          </Link>
-          <Link :href="url('/pos/shift-management')" class="text-sm pb-2 text-gray-500 hover:text-gray-700">
-            Shift
-          </Link>
-          <Link :href="url('/admin')" class="text-sm pb-2 text-gray-500 hover:text-gray-700">
-            Admin
-          </Link>
-        </nav>
-      </div>
-      
-      <div class="flex items-center gap-4">
-        <span class="material-symbols-outlined" style="color: #8B6B3D;">wifi</span>
-        <span class="material-symbols-outlined" style="color: #8B6B3D;">notifications</span>
-        <button @click="toggleTheme" class="material-symbols-outlined" style="color: #8B6B3D;">dark_mode</button>
-        <div class="flex items-center gap-2 ml-4">
-          <span class="text-sm font-semibold">{{ page.props?.auth?.user?.name }}</span>
-          <span class="material-symbols-outlined text-3xl" style="color: #8B6B3D;">account_circle</span>
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-[#8B6B3D] text-white flex items-center justify-center font-black">
+            <Coffee class="w-4 h-4" />
+          </div>
+          <div>
+            <h1 class="text-sm font-black tracking-wider text-[#2F2212] leading-none">WARKOP POS</h1>
+            <p class="text-[10px] text-stone-500 font-medium mt-0.5">{{ currentUser?.outlet?.name || 'Warkop Kenangan' }}</p>
+          </div>
         </div>
+
+        <!-- Shift Indicator Badge -->
+        <div class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-semibold">
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span>Shift Aktif #{{ currentShift?.id || '1' }}</span>
+        </div>
+      </div>
+
+      <!-- Right Header Actions: Clock, User, Admin, Logout -->
+      <div class="flex items-center gap-3">
+        <!-- Live Clock -->
+        <div class="hidden md:flex items-center gap-1.5 px-3 py-1 bg-[#FAF7F2] border border-[#E8E1D9] rounded-lg text-xs font-mono font-bold text-stone-700">
+          <Clock class="w-3.5 h-3.5 text-[#8B6B3D]" />
+          <span>{{ currentTime }}</span>
+        </div>
+
+        <!-- Cashier Name -->
+        <div class="flex items-center gap-2 pl-2">
+          <div class="w-8 h-8 rounded-full bg-[#FAF7F2] border border-[#E8E1D9] flex items-center justify-center text-[#8B6B3D]">
+            <UserIcon class="w-4 h-4" />
+          </div>
+          <div class="text-left hidden lg:block">
+            <p class="text-xs font-bold leading-tight text-[#2F2212]">{{ currentUser?.name || 'Kasir' }}</p>
+            <p class="text-[10px] text-stone-500 uppercase tracking-wider font-semibold">{{ currentUser?.role || 'Staff' }}</p>
+          </div>
+        </div>
+
+        <!-- Admin Back-Office Link -->
+        <a
+          href="/admin"
+          target="_blank"
+          class="h-9 px-3 rounded-lg border border-[#E8E1D9] hover:bg-[#FAF7F2] text-xs font-semibold text-stone-700 flex items-center gap-1.5 transition-colors"
+          title="Buka Admin Panel Filament"
+        >
+          <ExternalLink class="w-3.5 h-3.5 text-[#8B6B3D]" />
+          <span class="hidden sm:inline">Admin</span>
+        </a>
+
+        <!-- Logout Button -->
+        <button
+          type="button"
+          @click="handleLogout"
+          class="h-9 px-2.5 rounded-lg border border-[#E8E1D9] hover:bg-rose-50 hover:text-rose-700 text-stone-500 text-xs font-semibold flex items-center gap-1 transition-colors"
+          title="Keluar"
+        >
+          <LogOut class="w-3.5 h-3.5" />
+        </button>
       </div>
     </header>
 
+    <!-- Main Workspace -->
     <main class="flex flex-1 overflow-hidden">
-      <!-- Left Sidebar -->
-      <aside class="w-80 flex flex-col bg-white border-r border-gray-200 p-4 gap-4 shrink-0 h-full overflow-y-auto">
-        <!-- Order Type -->
-        <div class="flex flex-col gap-2">
-          <label class="font-bold text-xs tracking-wider text-gray-500 uppercase">TABLE / QUEUE</label>
-          <div class="grid grid-cols-2 gap-2">
-            <button @click="cartStore.setOrderType('dine_in')"
+      <!-- Left Sidebar: Order Settings & Categories -->
+      <aside class="w-72 bg-white border-r border-[#E8E1D9] p-4 flex flex-col gap-4 shrink-0 overflow-y-auto">
+        <!-- Order Type Segment -->
+        <div class="space-y-1.5">
+          <label class="text-[10px] font-bold tracking-wider uppercase text-stone-400">Mode Pesanan</label>
+          <div class="grid grid-cols-2 gap-1.5 p-1 bg-[#FAF7F2] border border-[#E8E1D9] rounded-xl">
+            <button
+              type="button"
+              @click="cartStore.setOrderType('dine_in')"
               :class="[
-                'flex items-center justify-center h-12 rounded-lg font-bold border transition-colors',
+                'h-10 rounded-lg text-xs font-bold transition-all',
                 cartStore.orderType === 'dine_in'
-                  ? 'text-white border-transparent' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                  ? 'bg-[#8B6B3D] text-white shadow-xs'
+                  : 'text-stone-600 hover:text-[#2F2212]'
               ]"
-              :style="cartStore.orderType === 'dine_in' ? 'background-color: #8B6B3D;' : ''"
-            >Dine In</button>
-            <button @click="cartStore.setOrderType('takeaway')"
+            >
+              Dine In
+            </button>
+            <button
+              type="button"
+              @click="cartStore.setOrderType('takeaway')"
               :class="[
-                'flex items-center justify-center h-12 rounded-lg font-bold border transition-colors',
+                'h-10 rounded-lg text-xs font-bold transition-all',
                 cartStore.orderType === 'takeaway'
-                  ? 'text-white border-transparent' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                  ? 'bg-[#8B6B3D] text-white shadow-xs'
+                  : 'text-stone-600 hover:text-[#2F2212]'
               ]"
-              :style="cartStore.orderType === 'takeaway' ? 'background-color: #8B6B3D;' : ''"
-            >Take Away</button>
+            >
+              Take Away
+            </button>
           </div>
-          
-          <!-- Table Selection (Dine In) -->
-          <div v-if="cartStore.orderType === 'dine_in'" class="flex flex-col gap-2 mt-2">
-            <select v-model="cartStore.selectedTableId" @change="handleLoadTab(cartStore.selectedTableId)"
-              class="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-gray-800 focus:ring-2 focus:ring-[#8B6B3D]">
+        </div>
+
+        <!-- Table & Customer Input (Dine In) -->
+        <div v-if="cartStore.orderType === 'dine_in'" class="space-y-2 pt-1 border-t border-[#E8E1D9]">
+          <div>
+            <label class="text-[10px] font-bold tracking-wider uppercase text-stone-400 block mb-1">
+              Pilih Meja
+            </label>
+            <select
+              :value="cartStore.selectedTableId ?? ''"
+              @change="cartStore.setSelectedTable(($event.target as HTMLSelectElement).value ? Number(($event.target as HTMLSelectElement).value) : null)"
+              class="w-full px-3 py-2 border border-[#E8E1D9] rounded-lg text-xs font-semibold bg-[#FAF7F2] text-stone-800 focus:ring-2 focus:ring-[#8B6B3D]"
+            >
               <option value="">Pilih Meja</option>
-              <option v-for="table in tables" :key="table.id" :value="table.id"
-                :class="table.status === 'occupied' ? 'font-bold text-red-600' : ''">
+              <option
+                v-for="table in tables"
+                :key="table.id"
+                :value="table.id"
+                :class="table.status === 'occupied' ? 'font-bold text-amber-700' : ''"
+              >
                 {{ table.label }} ({{ table.capacity }} pax){{ table.status === 'occupied' ? ' - Terisi' : '' }}
               </option>
             </select>
-            <input v-model="cartStore.customerName" type="text" placeholder="Nama pelanggan"
-              class="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-gray-800 focus:ring-2 focus:ring-[#8B6B3D]">
           </div>
 
-          <!-- Active Tabs -->
-          <div v-if="activeTabs.length > 0" class="flex flex-col gap-2 mt-3 pt-3 border-t border-gray-200">
-            <label class="font-bold text-xs tracking-wider text-gray-500 uppercase">TAB AKTIF</label>
-            <select v-model="cartStore.tabId" @change="handleLoadTab(cartStore.tabId)"
-              class="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-gray-800 focus:ring-2 focus:ring-[#8B6B3D]">
-              <option value="">Buka Tab Aktif</option>
-              <option v-for="tab in activeTabs" :key="tab.id" :value="tab.id">
-                {{ tab.customer_name || 'Meja ' + (tab.table?.number || '') }} - Rp {{ formatCurrency(tab.items.reduce((s, i) => s + i.subtotal, 0)) }}
-              </option>
-            </select>
-            
-            <div v-if="cartStore.tabId" class="grid grid-cols-3 gap-1">
-              <button @click="cartStore.openSplitBillModal(activeTabs.find(t => t.id === cartStore.tabId))"
-                class="px-1 py-1.5 text-[10px] font-bold border border-gray-200 rounded bg-white hover:bg-gray-50">Pecah</button>
-              <button @click="cartStore.openMergeTabModal"
-                class="px-1 py-1.5 text-[10px] font-bold border border-gray-200 rounded bg-white hover:bg-gray-50">Gabung</button>
-              <button @click="cartStore.openTransferTabModal(activeTabs.find(t => t.id === cartStore.tabId))"
-                class="px-1 py-1.5 text-[10px] font-bold border border-gray-200 rounded bg-white hover:bg-gray-50">Pindah</button>
+          <div>
+            <label class="text-[10px] font-bold tracking-wider uppercase text-stone-400 block mb-1">
+              Nama Pelanggan
+            </label>
+            <input
+              :value="cartStore.customerName"
+              @input="cartStore.setCustomerName(($event.target as HTMLInputElement).value)"
+              type="text"
+              placeholder="Contoh: Bpk. Budi"
+              class="w-full px-3 py-2 border border-[#E8E1D9] rounded-lg text-xs bg-[#FAF7F2] text-stone-800 focus:ring-2 focus:ring-[#8B6B3D]"
+            />
+          </div>
+        </div>
+
+        <!-- Active Tabs Quick Selector -->
+        <div v-if="activeTabs.length > 0" class="pt-2 border-t border-[#E8E1D9] space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="text-[10px] font-bold tracking-wider uppercase text-stone-400">
+              Tab Aktif ({{ activeTabs.length }})
+            </label>
+          </div>
+          <select
+            :value="cartStore.tabId ?? ''"
+            @change="handleLoadTab(($event.target as HTMLSelectElement).value)"
+            class="w-full px-3 py-2 border border-[#E8E1D9] rounded-lg text-xs font-semibold bg-[#FAF7F2] text-stone-800 focus:ring-2 focus:ring-[#8B6B3D]"
+          >
+            <option value="">Muat Tab Aktif</option>
+            <option v-for="t in activeTabs" :key="t.id" :value="t.id">
+              {{ t.customer_name || 'Meja ' + (t.table?.number || '') }} - {{ formatCurrency(t.items.reduce((s, i) => s + i.subtotal, 0)) }}
+            </option>
+          </select>
+
+          <!-- Tab Action Bar -->
+          <div v-if="cartStore.tabId" class="grid grid-cols-3 gap-1">
+            <button
+              type="button"
+              @click="cartStore.openSplitBillModal(activeTabs.find(t => t.id === cartStore.tabId)!)"
+              class="py-1 text-[10px] font-bold border border-[#E8E1D9] rounded bg-[#FAF7F2] hover:bg-stone-100 text-stone-700"
+            >
+              Pecah
+            </button>
+            <button
+              type="button"
+              @click="cartStore.openMergeTabModal"
+              class="py-1 text-[10px] font-bold border border-[#E8E1D9] rounded bg-[#FAF7F2] hover:bg-stone-100 text-stone-700"
+            >
+              Gabung
+            </button>
+            <button
+              type="button"
+              @click="cartStore.openTransferTabModal(activeTabs.find(t => t.id === cartStore.tabId)!)"
+              class="py-1 text-[10px] font-bold border border-[#E8E1D9] rounded bg-[#FAF7F2] hover:bg-stone-100 text-stone-700"
+            >
+              Pindah
+            </button>
+          </div>
+        </div>
+
+        <!-- Categories List -->
+        <div class="flex-1 flex flex-col gap-1.5 pt-2 border-t border-[#E8E1D9] overflow-y-auto">
+          <label class="text-[10px] font-bold tracking-wider uppercase text-stone-400">Kategori Menu</label>
+          <button
+            type="button"
+            @click="handleSelectCategory(null)"
+            :class="[
+              'w-full px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-between transition-all text-left',
+              selectedCategory === null
+                ? 'bg-[#8B6B3D] text-white shadow-xs'
+                : 'bg-white hover:bg-[#FAF7F2] text-stone-700 border border-[#E8E1D9]'
+            ]"
+          >
+            <div class="flex items-center gap-2">
+              <Layers class="w-4 h-4" />
+              <span>Semua Menu</span>
             </div>
+            <span
+              :class="[
+                'text-[10px] px-1.5 py-0.5 rounded-full font-mono',
+                selectedCategory === null ? 'bg-white/20 text-white' : 'bg-stone-100 text-stone-500'
+              ]"
+            >
+              {{ products.length }}
+            </span>
+          </button>
+
+          <button
+            v-for="cat in categories"
+            :key="cat.id"
+            type="button"
+            @click="handleSelectCategory(cat.id)"
+            :class="[
+              'w-full px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-between transition-all text-left',
+              selectedCategory === cat.id
+                ? 'bg-[#8B6B3D] text-white shadow-xs'
+                : 'bg-white hover:bg-[#FAF7F2] text-stone-700 border border-[#E8E1D9]'
+            ]"
+          >
+            <div class="flex items-center gap-2 truncate">
+              <Coffee class="w-4 h-4 shrink-0" />
+              <span class="truncate">{{ cat.name }}</span>
+            </div>
+            <span
+              :class="[
+                'text-[10px] px-1.5 py-0.5 rounded-full font-mono shrink-0',
+                selectedCategory === cat.id ? 'bg-white/20 text-white' : 'bg-stone-100 text-stone-500'
+              ]"
+            >
+              {{ cat.products_count ?? 0 }}
+            </span>
+          </button>
+        </div>
+
+        <!-- Hotkey Reference Footer -->
+        <div class="pt-2 border-t border-[#E8E1D9] text-[10px] text-stone-400 space-y-1">
+          <div class="flex justify-between">
+            <span>F9</span>
+            <span class="font-bold text-stone-600">Buka Pembayaran</span>
           </div>
-        </div>
-
-        <!-- Categories -->
-        <div class="flex-1 flex flex-col gap-2 mt-3 pt-3 border-t border-gray-200">
-          <label class="font-bold text-xs tracking-wider text-gray-500 uppercase">CATEGORIES</label>
-          <nav class="flex flex-col gap-2">
-            <button @click="handleSelectCategory(null)"
-              :class="[
-                'flex items-center gap-3 px-4 h-14 rounded-lg font-bold transition-colors w-full text-left',
-                !page.props?.url?.includes('category=') && !page.props?.url?.includes('category=')
-                  ? 'text-white border' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
-              ]"
-              :style="!page.props?.url?.includes('category=') ? 'background-color: #8B6B3D; border-color: #8B6B3D;' : ''"
-            >
-              <span class="material-symbols-outlined">menu_book</span>
-              <span class="flex-1 truncate">Semua Kategori</span>
-            </button>
-            
-            <button v-for="category in categories" :key="category.id" @click="handleSelectCategory(category.id)"
-              :class="[
-                'flex items-center gap-3 px-4 h-14 rounded-lg font-bold transition-colors w-full text-left',
-                page.props?.url?.includes('category=' + category.id)
-                  ? 'text-white border' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
-              ]"
-              :style="page.props?.url?.includes('category=' + category.id) ? 'background-color: #8B6B3D; border-color: #8B6B3D;' : ''"
-            >
-              <span class="material-symbols-outlined" :style="category.color ? 'color: ' + category.color : ''">
-                {{ category.icon || 'coffee' }}
-              </span>
-              <span class="flex-1 truncate">{{ category.name }}</span>
-              <span class="px-1.5 py-0.5 text-xs rounded-full bg-gray-100 text-gray-500">
-                {{ category.products_count || 0 }}
-              </span>
-            </button>
-          </nav>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="flex flex-col gap-2 pt-4 border-t border-gray-200 mt-auto">
-          <div class="grid grid-cols-2 gap-2">
-            <button class="h-10 text-[10px] font-bold bg-yellow-100 text-yellow-800 rounded border border-yellow-200">F1: CARI</button>
-            <button class="h-10 text-[10px] font-bold bg-yellow-100 text-yellow-800 rounded border border-yellow-200">F2: DISKON</button>
-            <button class="h-10 text-[10px] font-bold bg-yellow-100 text-yellow-800 rounded border border-yellow-200">F3: LACI</button>
-            <button class="h-10 text-[10px] font-bold bg-yellow-100 text-yellow-800 rounded border border-yellow-200">F4: STRUK</button>
+          <div class="flex justify-between">
+            <span>Esc</span>
+            <span class="font-bold text-stone-600">Tutup Modal</span>
           </div>
         </div>
       </aside>
 
-      <!-- Center: Menu Grid -->
-      <section class="flex-1 flex flex-col bg-[#F5F0EB] p-4 gap-4 overflow-hidden">
-        <div class="flex justify-between items-center border-b border-gray-200 pb-4">
-          <div class="flex gap-2">
-            <button class="px-4 py-1 rounded-full text-white text-xs font-semibold" style="background-color: #8B6B3D;">Semua Menu</button>
+      <!-- Center Content Area: Search Bar & Menu Grid -->
+      <section class="flex-1 flex flex-col p-5 gap-4 overflow-hidden">
+        <!-- Top Filter Bar -->
+        <div class="flex items-center justify-between gap-4 shrink-0">
+          <div>
+            <h2 class="text-lg font-black text-[#2F2212]">
+              {{ selectedCategory ? (categories.find(c => c.id === selectedCategory)?.name || 'Kategori') : 'Semua Menu' }}
+            </h2>
+            <p class="text-xs text-stone-500">{{ products.length }} item siap dipesan</p>
           </div>
-          
-          <!-- Search Bar -->
-          <div class="relative w-64">
-            <input v-model="searchQuery" @input="debouncedSearch" type="text" placeholder="Cari menu..."
-              class="w-full pl-9 pr-4 py-1.5 border border-gray-200 rounded-full bg-white text-gray-800 focus:ring-2 focus:ring-[#8B6B3D] text-sm">
-            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">search</span>
+
+          <!-- Search Input -->
+          <div class="relative w-72">
+            <Search class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" />
+            <input
+              v-model="searchQuery"
+              @input="debouncedSearch"
+              type="text"
+              placeholder="Cari menu kopi, makanan..."
+              class="w-full pl-9 pr-9 py-2 border border-[#E8E1D9] rounded-xl bg-white text-xs text-stone-800 placeholder:text-stone-400 focus:ring-2 focus:ring-[#8B6B3D] focus:border-[#8B6B3D] shadow-xs"
+            />
+            <button
+              v-if="searchQuery"
+              type="button"
+              @click="clearSearch"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
+            >
+              <X class="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
-        
+
+        <!-- Menu Grid Container -->
         <div class="flex-1 overflow-y-auto pr-1">
-          <MenuGrid :products="products" :is-empty="products.length === 0" @add-to-cart="handleAddToCart" />
+          <MenuGrid
+            :products="products"
+            :is-empty="products.length === 0"
+            @add-to-cart="handleAddToCart"
+          />
         </div>
       </section>
 
-      <!-- Right: Cart Panel -->
-      <aside class="w-[400px] flex flex-col bg-white border-l border-gray-200 shadow-lg z-10 overflow-hidden">
-        <CartPanel 
+      <!-- Right Sidebar: Cart Panel -->
+      <aside class="w-96 flex flex-col bg-white border-l border-[#E8E1D9] shadow-md z-10 overflow-hidden">
+        <CartPanel
           :cart-items="cartStore.items"
           :subtotal="cartStore.subtotal"
           :tax-amount="cartStore.taxAmount"
@@ -474,7 +632,7 @@ const handlePrintReceipt = (orderId) => {
           :can-pay="cartStore.canPay"
           @update-quantity="cartStore.updateQuantity"
           @remove-item="cartStore.removeItem"
-          @clear-cart="handleClearCart"
+          @clear-cart="cartStore.clearCart"
           @save-tab="handleSaveTab"
           @open-payment="cartStore.openPaymentModal"
         />
@@ -482,24 +640,8 @@ const handlePrintReceipt = (orderId) => {
     </main>
 
     <!-- Modals -->
-    <PaymentModal v-if="cartStore.showPaymentModal"
-      :subtotal="cartStore.subtotal" :tax-amount="cartStore.taxAmount"
-      :service-charge="cartStore.serviceCharge" :total="cartStore.total"
-      :rounded-total="cartStore.roundedTotal" :change="cartStore.change"
-      :payment-method="cartStore.paymentMethod" :cash-received="cartStore.cashReceived"
-      :split-payments="cartStore.splitPayments"
-      @close="cartStore.closePaymentModal"
-      @update:payment-method="cartStore.paymentMethod = $event"
-      @update:cash-received="cartStore.cashReceived = $event"
-      @update:split-payments="cartStore.splitPayments = $event"
-      @process-payment="handleProcessPayment"
-      @check-qris-status="handleCheckQrisStatus"
-      @cancel-qris="handleCancelQris"
-      @add-split="cartStore.addSplitPayment"
-      @remove-split="cartStore.removeSplitPayment"
-    />
-
-    <ModifierModal v-if="cartStore.showModifierModal"
+    <ModifierModal
+      v-if="cartStore.showModifierModal && cartStore.currentProduct"
       :product="cartStore.currentProduct"
       :selected-variant-id="cartStore.selectedVariantId"
       :selected-modifier-ids="cartStore.selectedModifierIds"
@@ -516,16 +658,43 @@ const handlePrintReceipt = (orderId) => {
       @confirm="handleConfirmAddToCart"
     />
 
-    <QrisModal v-if="cartStore.showQrisModal"
-      :qr-string="cartStore.qrisQrString" :qr-image-url="cartStore.qrisQrImageUrl"
-      :payment-number="cartStore.qrisPaymentNumber" :amount="cartStore.qrisAmount"
-      :expires-at="cartStore.qrisExpiresAt" :error-message="cartStore.qrisErrorMessage"
-      @close="cartStore.closeQrisModal" @check-status="handleCheckQrisStatus"
+    <PaymentModal
+      v-if="cartStore.showPaymentModal"
+      :subtotal="cartStore.subtotal"
+      :tax-amount="cartStore.taxAmount"
+      :service-charge="cartStore.serviceCharge"
+      :total="cartStore.total"
+      :rounded-total="cartStore.roundedTotal"
+      :change="cartStore.change"
+      :payment-method="cartStore.paymentMethod"
+      :cash-received="cartStore.cashReceived"
+      :split-payments="cartStore.splitPayments"
+      @close="cartStore.closePaymentModal"
+      @update:payment-method="cartStore.paymentMethod = $event"
+      @update:cash-received="cartStore.cashReceived = $event"
+      @update:split-payments="cartStore.splitPayments = $event"
+      @process-payment="handleProcessPayment"
+      @add-split="cartStore.addSplitPayment"
+      @remove-split="cartStore.removeSplitPayment"
+    />
+
+    <QrisModal
+      v-if="cartStore.showQrisModal"
+      :qr-string="cartStore.qrisQrString"
+      :qr-image-url="cartStore.qrisQrImageUrl"
+      :payment-number="cartStore.qrisPaymentNumber"
+      :amount="cartStore.qrisAmount"
+      :expires-at="cartStore.qrisExpiresAt"
+      :error-message="cartStore.qrisErrorMessage"
+      @close="cartStore.closeQrisModal"
+      @check-status="handleCheckQrisStatus"
       @cancel="handleCancelQris"
     />
 
-    <SplitBillModal v-if="cartStore.showSplitBillModal"
-      :items="cartStore.splitBillItems" :tables="tables"
+    <SplitBillModal
+      v-if="cartStore.showSplitBillModal"
+      :items="cartStore.splitBillItems"
+      :tables="tables"
       :new-tab-customer-name="cartStore.splitBillNewTabCustomerName"
       :new-tab-table-id="cartStore.splitBillNewTabTableId"
       @close="cartStore.closeSplitBillModal"
@@ -535,16 +704,21 @@ const handlePrintReceipt = (orderId) => {
       @process="handleProcessSplitBill"
     />
 
-    <MergeTabModal v-if="cartStore.showMergeTabModal"
-      :tabs="activeTabs" :source-id="cartStore.mergeTabSourceId" :target-id="cartStore.mergeTabTargetId"
+    <MergeTabModal
+      v-if="cartStore.showMergeTabModal"
+      :tabs="activeTabs"
+      :source-id="cartStore.mergeTabSourceId"
+      :target-id="cartStore.mergeTabTargetId"
       @close="cartStore.closeMergeTabModal"
       @update:merge-tab-source-id="cartStore.mergeTabSourceId = $event"
       @update:merge-tab-target-id="cartStore.mergeTabTargetId = $event"
       @process="handleProcessMergeTab"
     />
 
-    <TransferTabModal v-if="cartStore.showTransferTabModal"
-      :tables="tables" :new-table-id="cartStore.transferTabNewTableId"
+    <TransferTabModal
+      v-if="cartStore.showTransferTabModal"
+      :tables="tables"
+      :new-table-id="cartStore.transferTabNewTableId"
       :new-customer-name="cartStore.transferTabNewCustomerName"
       @close="cartStore.closeTransferTabModal"
       @update:transfer-tab-new-table-id="cartStore.transferTabNewTableId = $event"
@@ -553,44 +727,3 @@ const handlePrintReceipt = (orderId) => {
     />
   </div>
 </template>
-
-<style>
-/* Notification toast */
-.toast-slide-enter-active { transition: all 0.3s ease-out; }
-.toast-slide-leave-active { transition: all 0.3s ease-in; }
-.toast-slide-enter-from { transform: translateX(100%); opacity: 0; }
-.toast-slide-leave-to { transform: translateX(100%); opacity: 0; }
-
-/* Custom scrollbar */
-.custom-scroll::-webkit-scrollbar { width: 4px; }
-.custom-scroll::-webkit-scrollbar-track { background: transparent; }
-.custom-scroll::-webkit-scrollbar-thumb { background: #d2c4b6; border-radius: 10px; }
-
-/* Animations */
-@keyframes pulse-red {
-  0% { box-shadow: 0 0 0 0 rgba(198, 40, 40, 0.4); }
-  70% { box-shadow: 0 0 0 8px rgba(198, 40, 40, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(198, 40, 40, 0); }
-}
-.low-stock-pulse { animation: pulse-red 2s infinite; }
-
-/* Dark Mode Overrides */
-.dark body {
-  background-color: #120e0c !important;
-  color: #f3ede8 !important;
-}
-.dark header { background-color: #1a1512 !important; border-color: #2b221d !important; }
-.dark header span, .dark header a { color: #f3ede8 !important; }
-.dark aside { background-color: #1a1512 !important; border-color: #2b221d !important; }
-.dark aside label { color: #d2c4b6 !important; }
-.dark aside button { background-color: #221c18 !important; border-color: #382d26 !important; color: #f3ede8 !important; }
-.dark aside button:hover { background-color: #2b231e !important; }
-.dark section { background-color: #120e0c !important; }
-.dark section button.bg-primary { background-color: #8b6b3d !important; color: #fff8f4 !important; }
-.dark aside.w-\[400px\] { background-color: #1a1512 !important; border-color: #2b221d !important; }
-.dark .bg-white { background-color: #1a1512 !important; }
-.dark .border-gray-200 { border-color: #2b221d !important; }
-.dark .text-gray-600 { color: #d2c4b6 !important; }
-.dark .text-gray-500 { color: #ab9f96 !important; }
-.dark input, .dark select { background-color: #120e0c !important; border-color: #2b221d !important; color: #f3ede8 !important; }
-</style>

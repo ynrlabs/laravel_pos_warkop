@@ -1,20 +1,35 @@
-<script setup>
-import { onMounted, onUnmounted } from 'vue';
+<script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { X, RefreshCw, AlertCircle } from 'lucide-vue-next';
 
-const props = defineProps({
-  qrString: { type: String, default: '' },
-  qrImageUrl: { type: String, default: '' },
-  paymentNumber: { type: String, default: '' },
-  amount: { type: Number, default: 0 },
-  expiresAt: { type: [String, Date, null], default: null },
-  errorMessage: { type: String, default: '' },
+interface Props {
+  qrString?: string;
+  qrImageUrl?: string;
+  paymentNumber?: string;
+  amount?: number;
+  expiresAt?: string | Date | null;
+  errorMessage?: string;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  qrString: '',
+  qrImageUrl: '',
+  paymentNumber: '',
+  amount: 0,
+  expiresAt: null,
+  errorMessage: '',
 });
 
-const emit = defineEmits(['close', 'check-status', 'cancel']);
+const emit = defineEmits<{
+  (e: 'close'): void;
+  (e: 'check-status'): void;
+  (e: 'cancel'): void;
+}>();
 
-let countdownInterval = null;
+const now = ref(new Date());
+let timer: ReturnType<typeof setInterval> | null = null;
 
-const formatCurrency = (amount) => {
+const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat('id-ID', {
     style: 'currency',
     currency: 'IDR',
@@ -23,190 +38,105 @@ const formatCurrency = (amount) => {
   }).format(amount).replace('Rp', 'Rp ');
 };
 
-const timeRemaining = computed(() => {
+const timeRemaining = computed<number | null>(() => {
   if (!props.expiresAt) return null;
-  const now = new Date();
   const expires = new Date(props.expiresAt);
-  const diff = Math.max(0, Math.floor((expires - now) / 1000));
+  const diff = Math.max(0, Math.floor((expires.getTime() - now.value.getTime()) / 1000));
   return diff;
 });
 
-const formatTime = (seconds) => {
+const formatTime = (seconds: number): string => {
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 };
 
-const handleClose = () => {
-  if (countdownInterval) clearInterval(countdownInterval);
-  emit('close');
-};
-
-const handleCheckStatus = () => {
-  emit('check-status');
-};
-
-const handleCancel = () => {
-  emit('cancel');
-};
-
 onMounted(() => {
-  if (props.expiresAt) {
-    countdownInterval = setInterval(() => {}, 1000);
-  }
+  timer = setInterval(() => {
+    now.value = new Date();
+  }, 1000);
 });
 
 onUnmounted(() => {
-  if (countdownInterval) clearInterval(countdownInterval);
+  if (timer) clearInterval(timer);
 });
 </script>
 
 <template>
-  <Transition name="modal-fade">
-    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div class="bg-white rounded-xl shadow-xl max-w-md w-full">
-        <!-- Header -->
-        <div class="p-4 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white z-10 dark:bg-zinc-900 dark:border-zinc-800">
-          <h3 class="text-lg font-bold text-gray-900 dark:text-white">Pembayaran QRIS / E-Wallet</h3>
-          <button @click="handleCancel" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-            <span class="material-symbols-outlined">close</span>
-          </button>
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs select-none">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full border border-[#E8E1D9] overflow-hidden">
+      <!-- Header -->
+      <div class="px-6 py-4 border-b border-[#E8E1D9] bg-[#FAF7F2] flex items-center justify-between">
+        <div>
+          <h3 class="text-base font-bold text-[#2F2212]">Pembayaran QRIS</h3>
+          <p class="text-xs text-stone-500 font-mono">Invoice: {{ paymentNumber }}</p>
         </div>
-        
-        <div class="p-6 space-y-6 text-center">
-          <!-- Invoice Number -->
-          <div>
-            <p class="text-sm text-gray-500 dark:text-gray-400">Nomor Invoice</p>
-            <p class="font-semibold text-gray-800 dark:text-white">{{ paymentNumber }}</p>
-          </div>
+        <button
+          type="button"
+          @click="emit('cancel')"
+          class="w-8 h-8 rounded-lg flex items-center justify-center text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition-colors"
+        >
+          <X class="w-5 h-5" />
+        </button>
+      </div>
 
-          <!-- Amount -->
-          <div class="bg-coffee-50 border border-coffee-200 rounded-lg p-4 max-w-xs mx-auto dark:bg-zinc-800 dark:border-zinc-700">
-            <p class="text-xs text-gray-600 uppercase tracking-wide font-semibold dark:text-gray-400">Total yang Harus Dibayar</p>
-            <p class="text-2xl font-bold text-coffee-600 mt-1 dark:text-coffee-400">{{ formatCurrency(amount) }}</p>
-          </div>
+      <!-- Content -->
+      <div class="p-6 flex flex-col items-center text-center space-y-4">
+        <!-- Amount -->
+        <div class="p-3 bg-[#FAF7F2] rounded-xl border border-[#E8E1D9] w-full">
+          <p class="text-[11px] font-semibold text-stone-500 uppercase tracking-wider">Total yang Harus Dibayar</p>
+          <p class="font-mono text-2xl font-black text-[#8B6B3D] mt-0.5">{{ formatCurrency(amount) }}</p>
+        </div>
 
-          <!-- QR Code -->
-          <div class="relative w-64 h-64 mx-auto border-2 border-dashed border-gray-200 rounded-xl p-2 bg-white flex items-center justify-center dark:border-zinc-700 dark:bg-zinc-900">
-            <img
-              v-if="qrImageUrl"
-              :src="qrImageUrl"
-              alt="QRIS Code"
-              class="w-full h-full object-contain"
-            />
-            <img
-              v-else-if="qrString"
-              :src="'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(qrString)"
-              alt="QRIS Code"
-              class="w-full h-full object-contain"
-            />
-            <div v-else class="text-gray-400 text-sm flex flex-col items-center">
-              <span class="material-symbols-outlined animate-spin text-3xl mb-2">sync</span>
-              Membuka QR Code...
-            </div>
+        <!-- QR Image -->
+        <div class="p-3 bg-white rounded-2xl border-2 border-dashed border-[#E8E1D9] shadow-inner">
+          <img
+            v-if="qrImageUrl"
+            :src="qrImageUrl"
+            alt="QRIS Code"
+            class="w-56 h-56 object-contain"
+          />
+          <img
+            v-else-if="qrString"
+            :src="'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(qrString)"
+            alt="QRIS Code"
+            class="w-56 h-56 object-contain"
+          />
+          <div v-else class="w-56 h-56 flex items-center justify-center text-stone-400 text-xs">
+            Menunggu QR Code...
           </div>
+        </div>
 
-          <!-- Info & Timer -->
-          <div class="space-y-2">
-            <p class="text-xs text-gray-500 dark:text-gray-400">Silakan scan kode QRIS di atas menggunakan GoPay, OVO, DANA, LinkAja, ShopeePay, atau aplikasi Mobile Banking Anda.</p>
-            <p v-if="timeRemaining !== null" class="text-xs text-red-500 font-semibold flex items-center justify-center gap-1">
-              <span class="material-symbols-outlined text-sm">schedule</span>
-              Kedaluwarsa pada: {{ formatTime(timeRemaining) }}
-            </p>
-          </div>
+        <!-- Timer -->
+        <div v-if="timeRemaining !== null" class="text-xs text-stone-500">
+          Sisa waktu: <span class="font-mono font-bold text-amber-700">{{ formatTime(timeRemaining) }}</span>
+        </div>
 
-          <!-- Error Message -->
-          <div v-if="errorMessage" class="text-xs text-red-500 bg-red-50 p-2 rounded dark:bg-red-900/20">
-            {{ errorMessage }}
-          </div>
-
-          <!-- Action Buttons -->
-          <div class="flex flex-col gap-2 pt-4 border-t border-gray-100 dark:border-zinc-700">
-            <button
-              @click="handleCheckStatus"
-              class="w-full px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
-            >
-              <span class="material-symbols-outlined text-sm">sync</span> Cek Status Pembayaran
-            </button>
-            <button
-              @click="handleCancel"
-              class="w-full px-4 py-2 border border-gray-300 hover:bg-gray-50 text-gray-600 rounded-lg text-sm font-medium transition-colors dark:border-zinc-700 dark:text-gray-400 dark:hover:bg-zinc-800"
-            >
-              Batalkan & Kembali
-            </button>
-          </div>
+        <!-- Error message -->
+        <div v-if="errorMessage" class="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
+          <AlertCircle class="w-4 h-4 shrink-0" />
+          <span>{{ errorMessage }}</span>
         </div>
       </div>
+
+      <!-- Footer Buttons -->
+      <div class="p-4 bg-[#FAF7F2] border-t border-[#E8E1D9] flex gap-2">
+        <button
+          type="button"
+          @click="emit('cancel')"
+          class="flex-1 h-11 border border-[#E8E1D9] bg-white hover:bg-stone-50 text-stone-700 rounded-xl font-bold text-xs transition-colors"
+        >
+          Batalkan QRIS
+        </button>
+        <button
+          type="button"
+          @click="emit('check-status')"
+          class="flex-2 h-11 bg-[#8B6B3D] hover:bg-[#76582E] active:scale-[0.99] text-white rounded-xl font-bold text-xs shadow transition-all flex items-center justify-center gap-1.5"
+        >
+          <RefreshCw class="w-4 h-4" />
+          Cek Status Pembayaran
+        </button>
+      </div>
     </div>
-  </Transition>
+  </div>
 </template>
-
-<style scoped>
-@keyframes modal-fade-in {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-@keyframes modal-fade-out {
-  from { opacity: 1; transform: scale(1); }
-  to { opacity: 0; transform: scale(0.95); }
-}
-
-.modal-fade-enter-active,
-.modal-fade-leave-active {
-  transition: all 0.2s ease;
-}
-
-.modal-fade-enter-from {
-  opacity: 0;
-  transform: scale(0.95);
-}
-
-.modal-fade-leave-to {
-  opacity: 0;
-  transform: scale(0.95);
-}
-
-/* Dark Mode */
-.dark .bg-white {
-  background-color: #1a1512 !important;
-  color: #f3ede8 !important;
-  border: 1px solid #2b221d !important;
-}
-.dark .bg-white h3 {
-  color: #e8c08b !important;
-}
-.dark .bg-white label {
-  color: #d2c4b6 !important;
-}
-.dark .bg-white input,
-.dark .bg-white select,
-.dark .bg-white textarea {
-  background-color: #120e0c !important;
-  border-color: #2b221d !important;
-  color: #f3ede8 !important;
-}
-.dark .bg-white button.border-gray-200 {
-  border-color: #2b221d !important;
-  color: #d2c4b6 !important;
-}
-.dark .bg-coffee-50 {
-  background-color: #2d231e !important;
-  border-color: #584411 !important;
-}
-.dark .text-gray-500 {
-  color: #ab9f96 !important;
-}
-.dark .text-gray-600 {
-  color: #d2c4b6 !important;
-}
-.dark .border-gray-200 {
-  border-color: #2b221d !important;
-}
-.dark .border-gray-100 {
-  border-color: #2b221d !important;
-}
-.dark .hover\:bg-gray-50:hover {
-  background-color: #2b2422 !important;
-}
-</style>

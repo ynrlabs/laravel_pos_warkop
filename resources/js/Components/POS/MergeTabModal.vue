@@ -1,18 +1,26 @@
-<script setup>
-const props = defineProps({
-  tabs: { type: Array, required: true },
-  sourceId: { type: [Number, String, null], default: null },
-  targetId: { type: [Number, String, null], default: null },
+<script setup lang="ts">
+import type { Tab } from '@/Types/pos';
+import { X, GitMerge } from 'lucide-vue-next';
+
+interface Props {
+  tabs: Tab[];
+  sourceId?: number | string | null;
+  targetId?: number | string | null;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  sourceId: null,
+  targetId: null,
 });
 
-const emit = defineEmits([
-  'close',
-  'update:mergeTabSourceId',
-  'update:mergeTabTargetId',
-  'process',
-]);
+const emit = defineEmits<{
+  (e: 'close'): void;
+  (e: 'update:mergeTabSourceId', id: number | null): void;
+  (e: 'update:mergeTabTargetId', id: number | null): void;
+  (e: 'process', payload: { source_id: number; target_id: number }): void;
+}>();
 
-const formatCurrency = (amount) => {
+const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat('id-ID', {
     style: 'currency',
     currency: 'IDR',
@@ -21,154 +29,96 @@ const formatCurrency = (amount) => {
   }).format(amount).replace('Rp', 'Rp ');
 };
 
-const handleClose = () => {
-  emit('close');
-};
-
 const handleProcess = () => {
   if (!props.sourceId || !props.targetId) {
-    alert('Pilih tab sumber dan tab tujuan!');
     return;
   }
-  
   if (props.sourceId === props.targetId) {
-    alert('Tab sumber dan tujuan tidak boleh sama!');
     return;
   }
-  
   emit('process', {
-    source_id: props.sourceId,
-    target_id: props.targetId,
+    source_id: Number(props.sourceId),
+    target_id: Number(props.targetId),
   });
 };
 </script>
 
 <template>
-  <Transition name="modal-fade">
-    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div class="bg-white rounded-xl shadow-xl max-w-md w-full">
-        <!-- Header -->
-        <div class="p-4 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white z-10 dark:bg-zinc-900 dark:border-zinc-800">
-          <h3 class="text-lg font-bold text-gray-900 dark:text-white">Gabung Tab (Merge Tab)</h3>
-          <button @click="handleClose" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-            <span class="material-symbols-outlined">close</span>
-          </button>
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs select-none">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full border border-[#E8E1D9] overflow-hidden">
+      <!-- Header -->
+      <div class="px-6 py-4 border-b border-[#E8E1D9] bg-[#FAF7F2] flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-[#8B6B3D]/10 text-[#8B6B3D] flex items-center justify-center">
+            <GitMerge class="w-4 h-4" />
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-[#2F2212]">Gabung Tab (Merge)</h3>
+            <p class="text-xs text-stone-500">Gabungkan dua tab aktif menjadi satu</p>
+          </div>
         </div>
-        
-        <div class="p-4 space-y-4">
-          <div class="bg-gray-50 p-3 rounded-lg dark:bg-zinc-800">
-            <p class="text-sm text-gray-600 dark:text-gray-400">Pilih tab sumber (akan dikosongkan) dan tab tujuan (akan menerima item). Tab sumber akan ditutup setelah digabung.</p>
-          </div>
-          
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tab Sumber (Item akan dipindahkan dari sini)</label>
-            <select
-              :value="sourceId"
-              @change="emit('update:mergeTabSourceId', $event.target.value)"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-coffee-500 bg-white dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
-            >
-              <option value="">Pilih Tab Sumber</option>
-              <option 
-                v-for="tab in tabs" 
-                :key="tab.id" 
-                :value="tab.id"
-              >
-                {{ tab.customer_name || 'Meja ' + tab.table?.number }} - {{ formatCurrency(tab.items.reduce((sum, item) => sum + item.subtotal, 0)) }} ({{ tab.items.length }} item)
-              </option>
-            </select>
-          </div>
-          
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tab Tujuan (Item akan ditambahkan ke sini)</label>
-            <select
-              :value="targetId"
-              @change="emit('update:mergeTabTargetId', $event.target.value)"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-coffee-500 bg-white dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
-            >
-              <option value="">Pilih Tab Tujuan</option>
-              <option 
-                v-for="tab in tabs" 
-                :key="tab.id" 
-                :value="tab.id"
-              >
-                {{ tab.customer_name || 'Meja ' + tab.table?.number }} - {{ formatCurrency(tab.items.reduce((sum, item) => sum + item.subtotal, 0)) }} ({{ tab.items.length }} item)
-              </option>
-            </select>
-          </div>
-          
-          <div class="flex gap-2 pt-4 border-t border-gray-200 dark:border-zinc-700">
-            <button
-              @click="handleClose"
-              class="flex-1 px-4 py-3 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors dark:border-zinc-700 dark:text-gray-300 dark:hover:bg-zinc-800"
-            >
-              Batal
-            </button>
-            <button
-              @click="handleProcess"
-              class="flex-1 px-4 py-3 bg-coffee-600 text-white rounded-lg font-medium hover:bg-coffee-700 transition-colors flex items-center justify-center gap-2"
-            >
-              <span class="material-symbols-outlined text-sm">join_inner</span> Gabung Tab
-            </button>
-          </div>
+        <button
+          type="button"
+          @click="emit('close')"
+          class="w-8 h-8 rounded-lg flex items-center justify-center text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition-colors"
+        >
+          <X class="w-5 h-5" />
+        </button>
+      </div>
+
+      <!-- Content -->
+      <div class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-stone-600 mb-1.5">
+            Tab Sumber (Akan ditutup)
+          </label>
+          <select
+            :value="sourceId ?? ''"
+            @change="emit('update:mergeTabSourceId', ($event.target as HTMLSelectElement).value ? Number(($event.target as HTMLSelectElement).value) : null)"
+            class="w-full px-3 py-2.5 border border-[#E8E1D9] rounded-xl text-xs bg-white text-stone-800 focus:ring-2 focus:ring-[#8B6B3D]"
+          >
+            <option value="">Pilih Tab Sumber</option>
+            <option v-for="t in tabs" :key="t.id" :value="t.id">
+              {{ t.customer_name || 'Meja ' + (t.table?.number || '') }} - {{ formatCurrency(t.items.reduce((s, i) => s + i.subtotal, 0)) }}
+            </option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-stone-600 mb-1.5">
+            Tab Tujuan (Akan menerima item)
+          </label>
+          <select
+            :value="targetId ?? ''"
+            @change="emit('update:mergeTabTargetId', ($event.target as HTMLSelectElement).value ? Number(($event.target as HTMLSelectElement).value) : null)"
+            class="w-full px-3 py-2.5 border border-[#E8E1D9] rounded-xl text-xs bg-white text-stone-800 focus:ring-2 focus:ring-[#8B6B3D]"
+          >
+            <option value="">Pilih Tab Tujuan</option>
+            <option v-for="t in tabs" :key="t.id" :value="t.id">
+              {{ t.customer_name || 'Meja ' + (t.table?.number || '') }} - {{ formatCurrency(t.items.reduce((s, i) => s + i.subtotal, 0)) }}
+            </option>
+          </select>
         </div>
       </div>
+
+      <!-- Footer Actions -->
+      <div class="p-4 bg-[#FAF7F2] border-t border-[#E8E1D9] flex gap-2">
+        <button
+          type="button"
+          @click="emit('close')"
+          class="flex-1 h-11 border border-[#E8E1D9] bg-white hover:bg-stone-50 text-stone-700 rounded-xl font-bold text-xs transition-colors"
+        >
+          Batal
+        </button>
+        <button
+          type="button"
+          @click="handleProcess"
+          :disabled="!sourceId || !targetId || sourceId === targetId"
+          class="flex-2 h-11 bg-[#8B6B3D] hover:bg-[#76582E] active:scale-[0.99] text-white rounded-xl font-bold text-xs shadow transition-all disabled:opacity-40 disabled:pointer-events-none tracking-wide"
+        >
+          Gabungkan Tab
+        </button>
+      </div>
     </div>
-  </Transition>
+  </div>
 </template>
-
-<style scoped>
-@keyframes modal-fade-in {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-@keyframes modal-fade-out {
-  from { opacity: 1; transform: scale(1); }
-  to { opacity: 0; transform: scale(0.95); }
-}
-
-.modal-fade-enter-active,
-.modal-fade-leave-active {
-  transition: all 0.2s ease;
-}
-
-.modal-fade-enter-from {
-  opacity: 0;
-  transform: scale(0.95);
-}
-
-.modal-fade-leave-to {
-  opacity: 0;
-  transform: scale(0.95);
-}
-
-/* Dark Mode */
-.dark .bg-white {
-  background-color: #1a1512 !important;
-  color: #f3ede8 !important;
-  border: 1px solid #2b221d !important;
-}
-.dark .bg-white h3 {
-  color: #e8c08b !important;
-}
-.dark .bg-white label {
-  color: #d2c4b6 !important;
-}
-.dark .bg-white select {
-  background-color: #120e0c !important;
-  border-color: #2b221d !important;
-  color: #f3ede8 !important;
-}
-.dark .bg-gray-50 {
-  background-color: #2b2422 !important;
-}
-.dark .text-gray-600 {
-  color: #d2c4b6 !important;
-}
-.dark .border-gray-200 {
-  border-color: #2b221d !important;
-}
-.dark .border-gray-300 {
-  border-color: #3d322f !important;
-}
-</style>

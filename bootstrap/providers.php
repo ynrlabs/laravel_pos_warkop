@@ -3,6 +3,5 @@
 return [
     App\Providers\AppServiceProvider::class,
     App\Providers\Filament\AdminPanelProvider::class,
-    App\Providers\Filament\PosPanelProvider::class,
-    Tightenco\Ziggy\ZiggyServiceProvider::class,
+    Tighten\Ziggy\ZiggyServiceProvider::class,
 ];

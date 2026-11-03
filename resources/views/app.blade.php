@@ -5,10 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Warkop POS</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @routes
+    @vite(['resources/css/app.css', 'resources/js/app.ts'])
     @inertiaHead
 </head>
-<body class="h-full bg-background font-body-md text-on-surface antialiased">
+<body class="h-full bg-[#F5F0EB] text-[#2F2212] antialiased selection:bg-[#D4B87A] selection:text-[#2F2212]">
     @inertia
 </body>
 </html>

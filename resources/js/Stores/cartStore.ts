@@ -1,102 +1,106 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
+import type {
+  Product,
+  ProductVariant,
+  CartItem,
+  CartItemModifier,
+  CartItemTopping,
+  Tab,
+  SplitPayment,
+} from '@/Types/pos';
 
 export const useCartStore = defineStore('cart', () => {
   // State
-  const items = ref([]);
-  const orderType = ref('dine_in'); // dine_in, takeaway
-  const selectedTableId = ref(null);
-  const customerName = ref('');
-  const tabId = ref(null);
-  const notes = ref('');
+  const items = ref<CartItem[]>([]);
+  const orderType = ref<'dine_in' | 'takeaway'>('dine_in');
+  const selectedTableId = ref<number | null>(null);
+  const customerName = ref<string>('');
+  const tabId = ref<number | null>(null);
+  const notes = ref<string>('');
 
   // Modals
-  const showPaymentModal = ref(false);
-  const showModifierModal = ref(false);
-  const showQrisModal = ref(false);
-  const showSplitBillModal = ref(false);
-  const showMergeTabModal = ref(false);
-  const showTransferTabModal = ref(false);
+  const showPaymentModal = ref<boolean>(false);
+  const showModifierModal = ref<boolean>(false);
+  const showQrisModal = ref<boolean>(false);
+  const showSplitBillModal = ref<boolean>(false);
+  const showMergeTabModal = ref<boolean>(false);
+  const showTransferTabModal = ref<boolean>(false);
 
   // Payment
-  const paymentMethod = ref('cash');
-  const cashReceived = ref(0);
-  const splitPayments = ref([]);
+  const paymentMethod = ref<string>('cash');
+  const cashReceived = ref<number>(0);
+  const splitPayments = ref<SplitPayment[]>([]);
 
   // Modifier selection
-  const currentProduct = ref(null);
-  const selectedVariantId = ref(null);
-  const selectedModifierIds = ref([]);
-  const selectedToppingIds = ref([]);
-  const selectedToppingQuantities = ref({});
-  const currentItemNotes = ref('');
+  const currentProduct = ref<Product | null>(null);
+  const selectedVariantId = ref<number | null>(null);
+  const selectedModifierIds = ref<number[]>([]);
+  const selectedToppingIds = ref<number[]>([]);
+  const selectedToppingQuantities = ref<Record<number, number>>({});
+  const currentItemNotes = ref<string>('');
 
   // Split bill
-  const splitBillTabId = ref(null);
-  const splitBillItems = ref([]);
-  const splitBillNewTabCustomerName = ref('');
-  const splitBillNewTabTableId = ref(null);
+  const splitBillTabId = ref<number | null>(null);
+  const splitBillItems = ref<any[]>([]);
+  const splitBillNewTabCustomerName = ref<string>('');
+  const splitBillNewTabTableId = ref<number | null>(null);
 
   // Merge tab
-  const mergeTabSourceId = ref(null);
-  const mergeTabTargetId = ref(null);
+  const mergeTabSourceId = ref<number | null>(null);
+  const mergeTabTargetId = ref<number | null>(null);
 
   // Transfer tab
-  const transferTabId = ref(null);
-  const transferTabNewTableId = ref(null);
-  const transferTabNewCustomerName = ref('');
+  const transferTabId = ref<number | null>(null);
+  const transferTabNewTableId = ref<number | null>(null);
+  const transferTabNewCustomerName = ref<string>('');
 
   // QRIS
-  const qrisQrString = ref('');
-  const qrisQrImageUrl = ref('');
-  const qrisPaymentNumber = ref('');
-  const qrisAmount = ref(0);
-  const qrisExpiresAt = ref(null);
-  const qrisErrorMessage = ref('');
+  const qrisQrString = ref<string>('');
+  const qrisQrImageUrl = ref<string>('');
+  const qrisPaymentNumber = ref<string>('');
+  const qrisAmount = ref<number>(0);
+  const qrisExpiresAt = ref<string | null>(null);
+  const qrisErrorMessage = ref<string>('');
 
   // Getters
-  const itemCount = computed(() => items.value.reduce((sum, item) => sum + item.quantity, 0));
-  
-  const subtotal = computed(() => items.value.reduce((sum, item) => sum + item.subtotal, 0));
+  const itemCount = computed<number>(() =>
+    items.value.reduce((sum, item) => sum + item.quantity, 0)
+  );
 
-  const taxRate = computed(() => {
-    // Default 11% PPN
-    return 0.11;
-  });
+  const subtotal = computed<number>(() =>
+    items.value.reduce((sum, item) => sum + item.subtotal, 0)
+  );
 
-  const serviceChargeRate = computed(() => {
-    // Default 5% service charge
-    return 0.05;
-  });
+  const taxRate = computed<number>(() => 0.11);
+  const serviceChargeRate = computed<number>(() => 0.05);
 
-  const taxAmount = computed(() => subtotal.value * taxRate.value);
-  const serviceCharge = computed(() => subtotal.value * serviceChargeRate.value);
-  const total = computed(() => subtotal.value + taxAmount.value + serviceCharge.value);
+  const taxAmount = computed<number>(() => Math.round(subtotal.value * taxRate.value));
+  const serviceCharge = computed<number>(() => Math.round(subtotal.value * serviceChargeRate.value));
+  const total = computed<number>(() => subtotal.value + taxAmount.value + serviceCharge.value);
 
-  const rounding = computed(() => {
-    // Default rounding to 100
-    return 100;
-  });
+  const rounding = computed<number>(() => 100);
+  const roundedTotal = computed<number>(() => Math.ceil(total.value / rounding.value) * rounding.value);
+  const change = computed<number>(() => Math.max(0, cashReceived.value - roundedTotal.value));
 
-  const roundedTotal = computed(() => Math.ceil(total.value / rounding.value) * rounding.value);
-  const change = computed(() => Math.max(0, cashReceived.value - roundedTotal.value));
+  const isEmpty = computed<boolean>(() => items.value.length === 0);
+  const canPay = computed<boolean>(
+    () => !isEmpty.value && (paymentMethod.value !== 'cash' || cashReceived.value >= roundedTotal.value)
+  );
 
-  const isEmpty = computed(() => items.value.length === 0);
-  const canPay = computed(() => !isEmpty.value && (paymentMethod.value !== 'cash' || cashReceived.value >= roundedTotal.value));
-
-  const hasRequiredModifiers = computed(() => {
+  const hasRequiredModifiers = computed<boolean>(() => {
     if (!currentProduct.value) return false;
-    return currentProduct.value.modifierGroups?.some(mg => mg.is_required) ?? false;
+    return currentProduct.value.modifierGroups?.some((mg) => mg.is_required) ?? false;
   });
 
   // Actions
-  function addItem(product, variant = null) {
+  function addItem(product: Product, variant: ProductVariant | null = null) {
     const variantId = variant?.id ?? null;
     const variantName = variant?.name ?? null;
     const priceAdjustment = variant?.price_adjustment ?? 0;
     const basePrice = product.base_price + priceAdjustment;
 
-    const cartItem = {
+    const cartItem: CartItem = {
       id: crypto.randomUUID(),
       product_id: product.id,
       product_name: product.name,
@@ -110,13 +114,11 @@ export const useCartStore = defineStore('cart', () => {
       subtotal: basePrice,
     };
 
-    // Check if product has modifiers or toppings
-    const hasModifiers = product.modifierGroups?.length > 0;
-    const hasToppings = product.toppings?.length > 0;
-    const hasRequiredModifiers = product.modifierGroups?.some(mg => mg.is_required) ?? false;
+    const hasModifiers = (product.modifierGroups?.length ?? 0) > 0;
+    const hasToppings = (product.toppings?.length ?? 0) > 0;
+    const hasRequired = product.modifierGroups?.some((mg) => mg.is_required) ?? false;
 
-    if (hasRequiredModifiers || hasModifiers || hasToppings) {
-      // Open modifier modal
+    if (hasRequired || hasModifiers || hasToppings) {
       currentProduct.value = product;
       selectedVariantId.value = variantId;
       selectedModifierIds.value = [];
@@ -125,47 +127,48 @@ export const useCartStore = defineStore('cart', () => {
       currentItemNotes.value = '';
       showModifierModal.value = true;
     } else {
-      // Add directly to cart
       addItemToCart(cartItem);
     }
   }
 
-  function addItemToCart(cartItem) {
+  function addItemToCart(cartItem: CartItem) {
     const existingIndex = findExistingItemIndex(cartItem);
-    
+
     if (existingIndex !== -1) {
       items.value[existingIndex].quantity += cartItem.quantity;
-      items.value[existingIndex].subtotal = items.value[existingIndex].quantity * items.value[existingIndex].base_price;
+      items.value[existingIndex].subtotal =
+        items.value[existingIndex].quantity * items.value[existingIndex].base_price;
     } else {
       items.value.push(cartItem);
     }
   }
 
-  function findExistingItemIndex(newItem) {
-    return items.value.findIndex(item => 
-      item.product_id === newItem.product_id &&
-      item.variant_id === newItem.variant_id &&
-      modifiersMatch(item.modifiers, newItem.modifiers) &&
-      toppingsMatch(item.toppings, newItem.toppings)
+  function findExistingItemIndex(newItem: CartItem): number {
+    return items.value.findIndex(
+      (item) =>
+        item.product_id === newItem.product_id &&
+        item.variant_id === newItem.variant_id &&
+        modifiersMatch(item.modifiers, newItem.modifiers) &&
+        toppingsMatch(item.toppings, newItem.toppings)
     );
   }
 
-  function modifiersMatch(modifiers1, modifiers2) {
+  function modifiersMatch(modifiers1: CartItemModifier[], modifiers2: CartItemModifier[]): boolean {
     if (modifiers1.length !== modifiers2.length) return false;
-    const ids1 = modifiers1.map(m => m.id).sort();
-    const ids2 = modifiers2.map(m => m.id).sort();
+    const ids1 = modifiers1.map((m) => m.id).sort();
+    const ids2 = modifiers2.map((m) => m.id).sort();
     return ids1.every((id, index) => id === ids2[index]);
   }
 
-  function toppingsMatch(toppings1, toppings2) {
+  function toppingsMatch(toppings1: CartItemTopping[], toppings2: CartItemTopping[]): boolean {
     if (toppings1.length !== toppings2.length) return false;
-    const ids1 = toppings1.map(t => t.id).sort();
-    const ids2 = toppings2.map(t => t.id).sort();
+    const ids1 = toppings1.map((t) => t.id).sort();
+    const ids2 = toppings2.map((t) => t.id).sort();
     return ids1.every((id, index) => id === ids2[index]);
   }
 
-  function updateQuantity(itemId, quantity) {
-    const index = items.value.findIndex(item => item.id === itemId);
+  function updateQuantity(itemId: string, quantity: number) {
+    const index = items.value.findIndex((item) => item.id === itemId);
     if (index !== -1) {
       if (quantity <= 0) {
         items.value.splice(index, 1);
@@ -176,8 +179,8 @@ export const useCartStore = defineStore('cart', () => {
     }
   }
 
-  function removeItem(itemId) {
-    items.value = items.value.filter(item => item.id !== itemId);
+  function removeItem(itemId: string) {
+    items.value = items.value.filter((item) => item.id !== itemId);
   }
 
   function clearCart() {
@@ -189,31 +192,31 @@ export const useCartStore = defineStore('cart', () => {
     notes.value = '';
   }
 
-  function setOrderType(type) {
+  function setOrderType(type: 'dine_in' | 'takeaway') {
     orderType.value = type;
     if (type === 'takeaway') {
       selectedTableId.value = null;
     }
   }
 
-  function setSelectedTable(tableId) {
+  function setSelectedTable(tableId: number | null) {
     selectedTableId.value = tableId;
   }
 
-  function setCustomerName(name) {
+  function setCustomerName(name: string) {
     customerName.value = name;
   }
 
-  function setTabId(id) {
+  function setTabId(id: number | null) {
     tabId.value = id;
   }
 
-  function loadTab(tab) {
+  function loadTab(tab: Tab) {
     tabId.value = tab.id;
     selectedTableId.value = tab.table_id;
-    customerName.value = tab.customer_name;
+    customerName.value = tab.customer_name ?? '';
     orderType.value = 'dine_in';
-    items.value = tab.items.map(item => ({
+    items.value = tab.items.map((item) => ({
       id: crypto.randomUUID(),
       product_id: item.product_id,
       product_name: item.product_name,
@@ -221,18 +224,18 @@ export const useCartStore = defineStore('cart', () => {
       variant_name: item.variant_name,
       base_price: item.unit_price,
       quantity: item.quantity,
-      modifiers: item.modifiers.map(m => ({
+      modifiers: item.modifiers.map((m) => ({
         id: m.modifier_id,
         name: m.modifier_name,
         price_adjustment: m.price_adjustment,
       })),
-      toppings: item.toppings.map(t => ({
+      toppings: item.toppings.map((t) => ({
         id: t.topping_id,
         name: t.topping_name,
         price: t.unit_price,
         quantity: t.quantity,
       })),
-      notes: item.notes,
+      notes: item.notes ?? '',
       subtotal: item.subtotal,
     }));
   }
@@ -255,37 +258,37 @@ export const useCartStore = defineStore('cart', () => {
   function confirmAddToCart() {
     if (!currentProduct.value) return;
 
-    const variant = currentProduct.value.variants?.find(v => v.id === selectedVariantId.value) ?? null;
+    const variant = currentProduct.value.variants?.find((v) => v.id === selectedVariantId.value) ?? null;
     const variantId = variant?.id ?? null;
     const variantName = variant?.name ?? null;
     const priceAdjustment = variant?.price_adjustment ?? 0;
     const basePrice = currentProduct.value.base_price + priceAdjustment;
 
-    // Get selected modifiers
-    const modifiers = currentProduct.value.modifierGroups
-      ?.flatMap(mg => mg.modifiers)
-      .filter(m => selectedModifierIds.value.includes(m.id))
-      .map(m => ({
-        id: m.id,
-        name: m.name,
-        price_adjustment: m.price_adjustment,
-      })) ?? [];
+    const modifiers: CartItemModifier[] =
+      currentProduct.value.modifierGroups
+        ?.flatMap((mg) => mg.modifiers)
+        .filter((m) => selectedModifierIds.value.includes(m.id))
+        .map((m) => ({
+          id: m.id,
+          name: m.name,
+          price_adjustment: m.price_adjustment,
+        })) ?? [];
 
-    // Get selected toppings
-    const toppings = currentProduct.value.toppings
-      ?.filter(t => selectedToppingIds.value.includes(t.id))
-      .map(t => ({
-        id: t.id,
-        name: t.name,
-        price: t.price,
-        quantity: selectedToppingQuantities.value[t.id] ?? 1,
-      })) ?? [];
+    const toppings: CartItemTopping[] =
+      currentProduct.value.toppings
+        ?.filter((t) => selectedToppingIds.value.includes(t.id))
+        .map((t) => ({
+          id: t.id,
+          name: t.name,
+          price: t.price,
+          quantity: selectedToppingQuantities.value[t.id] ?? 1,
+        })) ?? [];
 
     const modifierSubtotal = modifiers.reduce((sum, m) => sum + m.price_adjustment, 0);
     const toppingSubtotal = toppings.reduce((sum, t) => sum + t.price * t.quantity, 0);
     const itemBasePrice = basePrice + modifierSubtotal + toppingSubtotal;
 
-    const cartItem = {
+    const cartItem: CartItem = {
       id: crypto.randomUUID(),
       product_id: currentProduct.value.id,
       product_name: currentProduct.value.name,
@@ -303,13 +306,13 @@ export const useCartStore = defineStore('cart', () => {
     closeModifierModal();
   }
 
-  function openModifierModal(product, existingItem = null) {
+  function openModifierModal(product: Product, existingItem: CartItem | null = null) {
     currentProduct.value = product;
     selectedVariantId.value = existingItem?.variant_id ?? null;
-    selectedModifierIds.value = existingItem?.modifiers?.map(m => m.id) ?? [];
-    selectedToppingIds.value = existingItem?.toppings?.map(t => t.id) ?? [];
+    selectedModifierIds.value = existingItem?.modifiers?.map((m) => m.id) ?? [];
+    selectedToppingIds.value = existingItem?.toppings?.map((t) => t.id) ?? [];
     selectedToppingQuantities.value = {};
-    existingItem?.toppings?.forEach(t => {
+    existingItem?.toppings?.forEach((t) => {
       selectedToppingQuantities.value[t.id] = t.quantity;
     });
     currentItemNotes.value = existingItem?.notes ?? '';
@@ -326,13 +329,11 @@ export const useCartStore = defineStore('cart', () => {
     currentItemNotes.value = '';
   }
 
-  function toggleModifier(modifierId, selectionType) {
+  function toggleModifier(modifierId: number, selectionType: 'single' | 'multiple') {
     const index = selectedModifierIds.value.indexOf(modifierId);
     if (selectionType === 'single') {
-      // Single select - replace all
       selectedModifierIds.value = [modifierId];
     } else {
-      // Multi select - toggle
       if (index === -1) {
         selectedModifierIds.value.push(modifierId);
       } else {
@@ -341,7 +342,7 @@ export const useCartStore = defineStore('cart', () => {
     }
   }
 
-  function toggleTopping(toppingId) {
+  function toggleTopping(toppingId: number) {
     const index = selectedToppingIds.value.indexOf(toppingId);
     if (index === -1) {
       selectedToppingIds.value.push(toppingId);
@@ -352,7 +353,7 @@ export const useCartStore = defineStore('cart', () => {
     }
   }
 
-  function incrementTopping(toppingId) {
+  function incrementTopping(toppingId: number) {
     if (selectedToppingQuantities.value[toppingId]) {
       selectedToppingQuantities.value[toppingId]++;
     } else {
@@ -363,7 +364,7 @@ export const useCartStore = defineStore('cart', () => {
     }
   }
 
-  function decrementTopping(toppingId) {
+  function decrementTopping(toppingId: number) {
     if (selectedToppingQuantities.value[toppingId]) {
       selectedToppingQuantities.value[toppingId]--;
       if (selectedToppingQuantities.value[toppingId] <= 0) {
@@ -377,9 +378,9 @@ export const useCartStore = defineStore('cart', () => {
   }
 
   // Split Bill
-  function openSplitBillModal(tab) {
+  function openSplitBillModal(tab: Tab) {
     splitBillTabId.value = tab.id;
-    splitBillItems.value = tab.items.map(item => ({
+    splitBillItems.value = tab.items.map((item) => ({
       ...item,
       selected: false,
       split_quantity: 0,
@@ -411,7 +412,7 @@ export const useCartStore = defineStore('cart', () => {
   }
 
   // Transfer Tab
-  function openTransferTabModal(tab) {
+  function openTransferTabModal(tab: Tab) {
     transferTabId.value = tab.id;
     transferTabNewTableId.value = null;
     transferTabNewCustomerName.value = tab.customer_name ?? '';
@@ -426,7 +427,13 @@ export const useCartStore = defineStore('cart', () => {
   }
 
   // QRIS
-  function openQrisModal(data) {
+  function openQrisModal(data: {
+    qr_string?: string;
+    qr_image_url?: string;
+    payment_number?: string;
+    amount?: number;
+    expires_at?: string;
+  }) {
     qrisQrString.value = data.qr_string ?? '';
     qrisQrImageUrl.value = data.qr_image_url ?? '';
     qrisPaymentNumber.value = data.payment_number ?? '';
@@ -447,7 +454,7 @@ export const useCartStore = defineStore('cart', () => {
     qrisErrorMessage.value = '';
   }
 
-  function setQrisError(message) {
+  function setQrisError(message: string) {
     qrisErrorMessage.value = message;
   }
 
@@ -459,12 +466,11 @@ export const useCartStore = defineStore('cart', () => {
     });
   }
 
-  function removeSplitPayment(index) {
+  function removeSplitPayment(index: number) {
     splitPayments.value.splice(index, 1);
   }
 
   return {
-    // State
     items,
     orderType,
     selectedTableId,
@@ -502,7 +508,6 @@ export const useCartStore = defineStore('cart', () => {
     qrisExpiresAt,
     qrisErrorMessage,
 
-    // Getters
     itemCount,
     subtotal,
     taxRate,
@@ -517,7 +522,6 @@ export const useCartStore = defineStore('cart', () => {
     canPay,
     hasRequiredModifiers,
 
-    // Actions
     addItem,
     addItemToCart,
     updateQuantity,

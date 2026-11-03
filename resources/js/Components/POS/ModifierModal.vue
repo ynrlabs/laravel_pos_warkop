@@ -1,27 +1,34 @@
-<script setup>
-import { computed, watch } from 'vue';
+<script setup lang="ts">
+import { computed } from 'vue';
+import type { Product, ProductVariant, ModifierGroup, Topping } from '@/Types/pos';
+import { X, Plus, Minus } from 'lucide-vue-next';
 
-const props = defineProps({
-  product: { type: Object, required: true },
-  selectedVariantId: { type: [Number, String, null], default: null },
-  selectedModifierIds: { type: Array, required: true },
-  selectedToppingIds: { type: Array, required: true },
-  selectedToppingQuantities: { type: Object, required: true },
-  currentItemNotes: { type: String, default: '' },
+interface Props {
+  product: Product;
+  selectedVariantId?: number | string | null;
+  selectedModifierIds: number[];
+  selectedToppingIds: number[];
+  selectedToppingQuantities: Record<number, number>;
+  currentItemNotes?: string;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  selectedVariantId: null,
+  currentItemNotes: '',
 });
 
-const emit = defineEmits([
-  'close',
-  'update:selectedVariantId',
-  'toggle-modifier',
-  'toggle-topping',
-  'increment-topping',
-  'decrement-topping',
-  'update:currentItemNotes',
-  'confirm',
-]);
+const emit = defineEmits<{
+  (e: 'close'): void;
+  (e: 'update:selectedVariantId', id: number | null): void;
+  (e: 'toggle-modifier', id: number, selectionType: 'single' | 'multiple'): void;
+  (e: 'toggle-topping', id: number): void;
+  (e: 'increment-topping', id: number): void;
+  (e: 'decrement-topping', id: number): void;
+  (e: 'update:currentItemNotes', notes: string): void;
+  (e: 'confirm'): void;
+}>();
 
-const formatCurrency = (amount) => {
+const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat('id-ID', {
     style: 'currency',
     currency: 'IDR',
@@ -30,260 +37,175 @@ const formatCurrency = (amount) => {
   }).format(amount).replace('Rp', 'Rp ');
 };
 
-const variantGroups = computed(() => {
-  if (!props.product?.variants?.length) return [];
-  return props.product.variants;
+const variantGroups = computed<ProductVariant[]>(() => {
+  return props.product?.variants ?? [];
 });
 
-const modifierGroups = computed(() => {
-  if (!props.product?.modifierGroups?.length) return [];
-  return props.product.modifierGroups;
+const modifierGroups = computed<ModifierGroup[]>(() => {
+  return props.product?.modifierGroups ?? [];
 });
 
-const toppings = computed(() => {
-  if (!props.product?.toppings?.length) return [];
-  return props.product.toppings;
+const toppings = computed<Topping[]>(() => {
+  return props.product?.toppings ?? [];
 });
 
-const isModifierSelected = (modifierId) => {
+const isModifierSelected = (modifierId: number): boolean => {
   return props.selectedModifierIds.includes(modifierId);
 };
 
-const isToppingSelected = (toppingId) => {
+const isToppingSelected = (toppingId: number): boolean => {
   return props.selectedToppingIds.includes(toppingId);
 };
 
-const getToppingQuantity = (toppingId) => {
+const getToppingQuantity = (toppingId: number): number => {
   return props.selectedToppingQuantities[toppingId] || 0;
-};
-
-const handleClose = () => {
-  emit('close');
-};
-
-const handleConfirm = () => {
-  emit('confirm');
-};
-
-const handleVariantClick = (variantId) => {
-  emit('update:selectedVariantId', variantId);
-};
-
-const handleModifierClick = (modifierId, selectionType) => {
-  emit('toggle-modifier', modifierId, selectionType);
-};
-
-const handleToppingClick = (toppingId) => {
-  emit('toggle-topping', toppingId);
-};
-
-const handleIncrementTopping = (toppingId) => {
-  emit('increment-topping', toppingId);
-};
-
-const handleDecrementTopping = (toppingId) => {
-  emit('decrement-topping', toppingId);
-};
-
-const handleNotesChange = (value) => {
-  emit('update:currentItemNotes', value);
 };
 </script>
 
 <template>
-  <Transition name="modal-fade">
-    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <!-- Header -->
-        <div class="p-4 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white z-10 dark:bg-zinc-900 dark:border-zinc-800">
-          <h3 class="text-lg font-bold text-gray-900 dark:text-white">Pilih Varian & Modifier</h3>
-          <button @click="handleClose" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-            <span class="material-symbols-outlined">close</span>
-          </button>
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs select-none">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full max-h-[85vh] flex flex-col border border-[#E8E1D9] overflow-hidden">
+      <!-- Header -->
+      <div class="px-6 py-4 border-b border-[#E8E1D9] bg-[#FAF7F2] flex items-center justify-between">
+        <div>
+          <h3 class="text-base font-bold text-[#2F2212]">Kustomisasi Pesanan</h3>
+          <p class="text-xs text-[#8B6B3D] font-medium">{{ product.name }}</p>
         </div>
-        
-        <div class="p-4 space-y-4">
-          <!-- Variants -->
-          <div v-if="variantGroups.length > 0" class="space-y-3">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Varian</label>
+        <button
+          type="button"
+          @click="emit('close')"
+          class="w-8 h-8 rounded-lg flex items-center justify-center text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition-colors"
+        >
+          <X class="w-5 h-5" />
+        </button>
+      </div>
+
+      <!-- Content -->
+      <div class="p-6 space-y-5 overflow-y-auto flex-1">
+        <!-- Variants -->
+        <div v-if="variantGroups.length > 0" class="space-y-2">
+          <label class="block text-xs font-bold uppercase tracking-wider text-stone-600">Pilihan Varian</label>
+          <div class="flex flex-wrap gap-2">
+            <button
+              v-for="variant in variantGroups"
+              :key="variant.id"
+              type="button"
+              @click="emit('update:selectedVariantId', variant.id)"
+              :class="[
+                'px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all',
+                selectedVariantId == variant.id
+                  ? 'border-[#8B6B3D] bg-[#8B6B3D] text-white shadow-sm'
+                  : 'border-[#E8E1D9] bg-white text-stone-700 hover:border-stone-400'
+              ]"
+            >
+              {{ variant.name }}
+              <span v-if="variant.price_adjustment !== 0" class="ml-1 opacity-90 font-mono">
+                ({{ variant.price_adjustment > 0 ? '+' : '' }}{{ formatCurrency(variant.price_adjustment) }})
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Modifier Groups -->
+        <div v-if="modifierGroups.length > 0" class="space-y-4">
+          <div v-for="mg in modifierGroups" :key="mg.id" class="space-y-2">
+            <div class="flex items-center justify-between">
+              <label class="text-xs font-bold uppercase tracking-wider text-stone-600">
+                {{ mg.name }}
+                <span v-if="mg.is_required" class="text-rose-500 ml-0.5">*</span>
+              </label>
+              <span class="text-[10px] text-stone-400">
+                {{ mg.selection_type === 'single' ? 'Pilih 1' : 'Pilih bebas' }}
+              </span>
+            </div>
             <div class="flex flex-wrap gap-2">
               <button
-                v-for="variant in variantGroups"
-                :key="variant.id"
-                @click="handleVariantClick(variant.id)"
+                v-for="mod in mg.modifiers"
+                :key="mod.id"
+                type="button"
+                @click="emit('toggle-modifier', mod.id, mg.selection_type)"
                 :class="[
-                  'px-4 py-2 border rounded-lg text-sm font-medium transition-all',
-                  selectedVariantId == variant.id
-                    ? 'border-coffee-600 bg-coffee-50 text-coffee-700 dark:border-coffee-400 dark:bg-coffee-900/30 dark:text-coffee-300'
-                    : 'border-gray-200 text-gray-600 hover:border-gray-300 dark:border-zinc-700 dark:text-gray-400 dark:hover:border-zinc-600'
+                  'px-3.5 py-1.5 rounded-lg text-xs font-medium border transition-all',
+                  isModifierSelected(mod.id)
+                    ? 'border-[#8B6B3D] bg-[#8B6B3D]/15 text-[#8B6B3D] font-bold'
+                    : 'border-[#E8E1D9] bg-white text-stone-700 hover:border-stone-300'
                 ]"
               >
-                {{ variant.name }}
-                <span v-if="variant.price_adjustment !== 0" class="ml-1">
-                  ({{ variant.price_adjustment > 0 ? '+' : '' }}{{ formatCurrency(variant.price_adjustment) }})
+                {{ mod.name }}
+                <span v-if="mod.price_adjustment > 0" class="ml-1 font-mono text-[11px] opacity-80">
+                  (+{{ formatCurrency(mod.price_adjustment) }})
                 </span>
               </button>
             </div>
           </div>
-          
-          <!-- Modifier Groups -->
-          <div v-if="modifierGroups.length > 0" class="space-y-4">
-            <div v-for="mg in modifierGroups" :key="mg.id" class="space-y-2">
-              <div class="flex items-center justify-between">
-                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {{ mg.name }}
-                  <span v-if="mg.is_required" class="text-red-500 ml-1">*</span>
-                </label>
-                <span class="text-xs text-gray-500 dark:text-gray-400">
-                  {{ mg.selection_type === 'single' ? 'Pilih 1' : 'Pilih hingga ' + (mg.max_selection ?? 'bebas') }}
-                </span>
+        </div>
+
+        <!-- Toppings -->
+        <div v-if="toppings.length > 0" class="space-y-2">
+          <label class="block text-xs font-bold uppercase tracking-wider text-stone-600">Topping / Tambahan</label>
+          <div class="space-y-2">
+            <div
+              v-for="topping in toppings"
+              :key="topping.id"
+              class="flex items-center justify-between p-2.5 border border-[#E8E1D9] rounded-xl hover:border-stone-300 transition-colors"
+            >
+              <div class="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  :checked="isToppingSelected(topping.id)"
+                  @change="emit('toggle-topping', topping.id)"
+                  class="w-4 h-4 text-[#8B6B3D] border-stone-300 rounded focus:ring-[#8B6B3D]"
+                />
+                <div>
+                  <p class="text-xs font-bold text-stone-800">{{ topping.name }}</p>
+                  <p class="text-[11px] font-mono text-[#8B6B3D]">+{{ formatCurrency(topping.price) }}</p>
+                </div>
               </div>
-              <div class="flex flex-wrap gap-2">
+              <div class="flex items-center gap-1.5">
                 <button
-                  v-for="mod in mg.modifiers"
-                  :key="mod.id"
-                  @click="handleModifierClick(mod.id, mg.selection_type)"
-                  :class="[
-                    'px-3 py-1.5 border rounded-lg text-sm transition-all',
-                    isModifierSelected(mod.id)
-                      ? 'border-coffee-600 bg-coffee-50 text-coffee-700 dark:border-coffee-400 dark:bg-coffee-900/30 dark:text-coffee-300'
-                      : 'border-gray-200 text-gray-600 hover:border-gray-300 dark:border-zinc-700 dark:text-gray-400 dark:hover:border-zinc-600'
-                  ]"
+                  type="button"
+                  @click="emit('decrement-topping', topping.id)"
+                  :disabled="getToppingQuantity(topping.id) <= 0"
+                  class="w-6 h-6 border border-[#E8E1D9] rounded flex items-center justify-center hover:bg-stone-100 disabled:opacity-30"
                 >
-                  {{ mod.name }}
-                  <span v-if="mod.price_adjustment > 0" class="ml-1">(+{{ formatCurrency(mod.price_adjustment) }})</span>
+                  <Minus class="w-3 h-3" />
+                </button>
+                <span class="w-6 text-center text-xs font-mono font-bold">{{ getToppingQuantity(topping.id) }}</span>
+                <button
+                  type="button"
+                  @click="emit('increment-topping', topping.id)"
+                  class="w-6 h-6 border border-[#E8E1D9] rounded flex items-center justify-center hover:bg-stone-100"
+                >
+                  <Plus class="w-3 h-3" />
                 </button>
               </div>
             </div>
           </div>
-          
-          <!-- Toppings -->
-          <div v-if="toppings.length > 0" class="space-y-3">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Topping / Extra</label>
-            <div class="space-y-2">
-              <div
-                v-for="topping in toppings"
-                :key="topping.id"
-                class="flex items-center justify-between p-2 border border-gray-200 rounded-lg dark:border-zinc-700"
-              >
-                <div class="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    :checked="isToppingSelected(topping.id)"
-                    @change="handleToppingClick(topping.id)"
-                    class="w-4 h-4 text-coffee-600 border-gray-300 rounded focus:ring-coffee-500 dark:border-zinc-700"
-                  >
-                  <div>
-                    <p class="text-sm font-medium text-gray-900 dark:text-white">{{ topping.name }}</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">+{{ formatCurrency(topping.price) }}</p>
-                  </div>
-                </div>
-                <div class="flex items-center gap-2">
-                  <button
-                    @click="handleDecrementTopping(topping.id)"
-                    :disabled="getToppingQuantity(topping.id) <= 0"
-                    class="w-6 h-6 border border-gray-300 rounded flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 dark:border-zinc-700 dark:hover:bg-zinc-800"
-                  >
-                    <span class="material-symbols-outlined text-xs">remove</span>
-                  </button>
-                  <span class="w-8 text-center text-sm font-medium">{{ getToppingQuantity(topping.id) }}</span>
-                  <button
-                    @click="handleIncrementTopping(topping.id)"
-                    class="w-6 h-6 border border-gray-300 rounded flex items-center justify-center hover:bg-gray-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
-                  >
-                    <span class="material-symbols-outlined text-xs">add</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Notes -->
-          <div class="space-y-2">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Catatan</label>
-              <textarea
-                :value="currentItemNotes"
-                @input="handleNotesChange($event.target.value)"
-                rows="2"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-coffee-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
-                placeholder="Contoh: Kurang manis, tanpa es, dll."
-              ></textarea>
-          </div>
-          
-          <!-- Confirm Button -->
-          <button
-            @click="handleConfirm"
-            class="w-full px-4 py-3 bg-coffee-600 text-white rounded-lg font-medium hover:bg-coffee-700 transition-colors"
-          >
-            Tambah ke Keranjang
-          </button>
+        </div>
+
+        <!-- Notes -->
+        <div class="space-y-1.5">
+          <label class="block text-xs font-bold uppercase tracking-wider text-stone-600">Catatan Khusus</label>
+          <textarea
+            :value="currentItemNotes"
+            @input="emit('update:currentItemNotes', ($event.target as HTMLTextAreaElement).value)"
+            rows="2"
+            class="w-full px-3 py-2 border border-[#E8E1D9] rounded-xl focus:ring-2 focus:ring-[#8B6B3D] text-xs text-stone-800 placeholder:text-stone-400"
+            placeholder="Contoh: Kurang manis, ekstra panas, pisah es..."
+          ></textarea>
         </div>
       </div>
+
+      <!-- Footer Confirm -->
+      <div class="p-4 bg-[#FAF7F2] border-t border-[#E8E1D9]">
+        <button
+          type="button"
+          @click="emit('confirm')"
+          class="w-full h-12 bg-[#8B6B3D] hover:bg-[#76582E] active:scale-[0.99] text-white rounded-xl font-bold text-sm shadow transition-all tracking-wide"
+        >
+          Konfirmasi & Tambah ke Keranjang
+        </button>
+      </div>
     </div>
-  </Transition>
+  </div>
 </template>
-
-<style scoped>
-@keyframes modal-fade-in {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-@keyframes modal-fade-out {
-  from { opacity: 1; transform: scale(1); }
-  to { opacity: 0; transform: scale(0.95); }
-}
-
-.modal-fade-enter-active,
-.modal-fade-leave-active {
-  transition: all 0.2s ease;
-}
-
-.modal-fade-enter-from {
-  opacity: 0;
-  transform: scale(0.95);
-}
-
-.modal-fade-leave-to {
-  opacity: 0;
-  transform: scale(0.95);
-}
-
-/* Dark Mode */
-.dark .bg-white {
-  background-color: #1a1512 !important;
-  color: #f3ede8 !important;
-  border: 1px solid #2b221d !important;
-}
-.dark .bg-white h3 {
-  color: #e8c08b !important;
-}
-.dark .bg-white label {
-  color: #d2c4b6 !important;
-}
-.dark .bg-white input,
-.dark .bg-white select,
-.dark .bg-white textarea {
-  background-color: #120e0c !important;
-  border-color: #2b221d !important;
-  color: #f3ede8 !important;
-}
-.dark .bg-white button.border-gray-200 {
-  border-color: #2b221d !important;
-  color: #d2c4b6 !important;
-}
-.dark .bg-white button.border-coffee-600 {
-  border-color: #e8c08b !important;
-  background-color: #2d231e !important;
-  color: #e8c08b !important;
-}
-.dark .hover\:bg-gray-50:hover {
-  background-color: #2b2422 !important;
-}
-.dark .hover\:bg-gray-100:hover {
-  background-color: #2b2422 !important;
-}
-.dark .bg-gray-100 {
-  background-color: #2b2422 !important;
-}
-</style>

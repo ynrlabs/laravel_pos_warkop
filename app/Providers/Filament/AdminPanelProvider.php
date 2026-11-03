@@ -11,6 +11,7 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -28,6 +29,10 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->renderHook(
+                PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE,
+                fn () => view('filament.auth.login-hint')
+            )
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -40,12 +45,12 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([])
             ->navigationItems([
                 NavigationItem::make('Buka POS')
-                    ->url('/pos/quick-order', shouldOpenInNewTab: true)
+                    ->url('/pos', shouldOpenInNewTab: true)
                     ->icon('heroicon-o-shopping-cart')
                     ->group('POS')
                     ->sort(1),
                 NavigationItem::make('Shift Management')
-                    ->url('/pos/shift-management', shouldOpenInNewTab: true)
+                    ->url('/admin/shifts', shouldOpenInNewTab: false)
                     ->icon('heroicon-o-clock')
                     ->group('POS')
                     ->sort(2),

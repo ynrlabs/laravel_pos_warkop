@@ -200,6 +200,7 @@ export interface SplitPayment {
 }
 
 export interface PaymentData {
+  [key: string]: any;
   method: string;
   cash_received?: number;
   change?: number;
@@ -207,6 +208,7 @@ export interface PaymentData {
 }
 
 export interface QuickOrderPageProps {
+  [key: string]: any;
   auth: {
     user: User;
   };
